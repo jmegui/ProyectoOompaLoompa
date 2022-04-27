@@ -25,6 +25,8 @@ class Modelo extends THREE.Object3D {
 
     this.objetivo = new Vector3();
     this.corriendo = false;
+
+    this.position.z = 10;
   }
   
   // ******* ******* ******* ******* ******* ******* ******* 
@@ -140,16 +142,17 @@ class Modelo extends THREE.Object3D {
   update () {
     // Hay que pedirle al mixer que actualice las animaciones que controla
     var dt = this.clock.getDelta();
-    if (this.mixer) this.mixer.update (dt);
+    if (this.mixer) 
+    {
 
     var distanciaConObjetivo = this.getDistancia(this.position,this.objetivo);
     
-    if(distanciaConObjetivo > 5)
+    if(distanciaConObjetivo > 7)
     {
       if(!this.corriendo)
       {
           this.corriendo = true;
-         // this.fadeToAction('punch',true,1);
+          this.fadeToAction('Walking',true,1);
       }
 
         if(this.position.x < this.objetivo.x)
@@ -170,12 +173,20 @@ class Modelo extends THREE.Object3D {
           this.position.z -= 1 * dt;
         }
 
-        this.lookAt(this.objetivo);
     }
     else
     {
+      if(this.corriendo)
+      {
+        this.fadeToAction('Punch',true,1);
+      }
       this.corriendo = false;
+
     }
+
+    this.lookAt(this.objetivo);
+    this.mixer.update (dt)
+  }
   }
 }
 
