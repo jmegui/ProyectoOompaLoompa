@@ -60,6 +60,7 @@ class MyScene extends THREE.Scene {
     this.add(this.umpalumpa);
 
     this.add (this.jugador);
+
   }
   
   initStats() {

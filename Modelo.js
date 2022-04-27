@@ -155,23 +155,55 @@ class Modelo extends THREE.Object3D {
           this.fadeToAction('Walking',true,1);
       }
 
+      /*
+      if(this.position.x < this.objetivo.x)
+      this.position.x = this.position.x + ( dt );
+      else
+      this.position.x = this.position.x - ( dt );
+
+      if(this.position.z < this.objetivo.z)
+      this.position.z = this.position.z + ( dt );
+      else
+      this.position.z = this.position.z - (dt );
+      */
+
+      if(Math.abs(this.objetivo.x - this.position.x) >= Math.abs(this.objetivo.z - this.position.z))
+      {
         if(this.position.x < this.objetivo.x)
         {
-          this.position.x += 1 * dt;
-        } 
+          var x = this.position.x;
+          this.position.x += dt;
+          this.position.z = (((this.objetivo.z - this.position.z)/(this.objetivo.x - x)) * (this.position.x - x) + this.position.z);
+        }
+        else if(this.position.x == this.objetivo.x)
+        {
+            //this.position.z += dt;
+        }
         else
         {
-          this.position.x -= 1 * dt;
+          var x = this.position.x;
+          this.position.x -= dt;
+          this.position.z = (((this.objetivo.z - this.position.z)/(this.objetivo.x - x)) * (this.position.x - x) + this.position.z);
         }
-
+      }
+      else
+      {
         if(this.position.z < this.objetivo.z)
         {
-          this.position.z += 1 * dt;
-        } 
+          var z = this.position.z;
+          this.position.z += dt;
+          this.position.x = (((this.objetivo.x - this.position.x)/(this.objetivo.z - z)) * (this.position.z - z) + this.position.x);
+        }
+        else if(this.position.z == this.objetivo.z)
+        {
+            this.position.z += dt;
+        }
         else
         {
-          this.position.z -= 1 * dt;
-        }
+          var z = this.position.z;
+          this.position.z -= dt;
+          this.position.x = (((this.objetivo.x - this.position.x)/(this.objetivo.z - z)) * (this.position.z - z) + this.position.x);        }
+      }
 
     }
     else
@@ -186,7 +218,7 @@ class Modelo extends THREE.Object3D {
 
     this.lookAt(this.objetivo);
     this.mixer.update (dt)
-  }
+    }
   }
 }
 
