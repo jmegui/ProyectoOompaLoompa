@@ -8,6 +8,8 @@ import { Stats } from '../libs/stats.module.js'
 
 // Clases de mi proyecto
 
+import {Modelo} from './Modelo.js'
+
 import { Jugador } from './Jugador.js'
 
  
@@ -52,6 +54,10 @@ class MyScene extends THREE.Scene {
 
     this.camera = this.jugador.getCamera();
     //this.createCamera();
+
+    this.umpalumpa = new Modelo();
+
+    this.add(this.umpalumpa);
 
     this.add (this.jugador);
   }

@@ -2,7 +2,7 @@ import * as THREE from '../libs/three.module.js'
 import { GLTFLoader } from '../libs/GLTFLoader.js'
  
 class Modelo extends THREE.Object3D {
-  constructor(gui,str) {
+  constructor() {
     super();
     this.clock = new THREE.Clock();
     var that = this;
@@ -17,7 +17,6 @@ class Modelo extends THREE.Object3D {
 //       console.log (animations);
       that.createActions(model,animations);
       // Se crea la interfaz de usuario que nos permite ver las animaciones que tiene el modelo y qué realizan
-      that.createGUI (gui, str);
     }, undefined, ( e ) => { console.error( e ); }
     );
   }
