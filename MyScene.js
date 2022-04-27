@@ -55,7 +55,7 @@ class MyScene extends THREE.Scene {
     this.camera = this.jugador.getCamera();
     //this.createCamera();
 
-    this.umpalumpa = new Modelo();
+    this.umpalumpa = new Modelo(this.gui,'Animacion robot');
 
     this.add(this.umpalumpa);
 
@@ -226,6 +226,9 @@ class MyScene extends THREE.Scene {
   update () {
     
     if (this.stats) this.stats.update();
+
+    this.umpalumpa.objetivo = this.jugador.position;
+    this.umpalumpa.update();
     
     // Se actualizan los elementos de la escena para cada frame
     

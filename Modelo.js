@@ -1,8 +1,9 @@
 import * as THREE from '../libs/three.module.js'
 import { GLTFLoader } from '../libs/GLTFLoader.js'
+import { Vector3 } from './libs/three.module.js';
  
 class Modelo extends THREE.Object3D {
-  constructor() {
+  constructor(gui,str) {
     super();
     this.clock = new THREE.Clock();
     var that = this;
@@ -16,9 +17,14 @@ class Modelo extends THREE.Object3D {
       that.add( model );
 //       console.log (animations);
       that.createActions(model,animations);
+
+      that.createGUI (gui, str);
       // Se crea la interfaz de usuario que nos permite ver las animaciones que tiene el modelo y qué realizan
     }, undefined, ( e ) => { console.error( e ); }
     );
+
+    this.objetivo = new Vector3();
+    this.corriendo = false;
   }
   
   // ******* ******* ******* ******* ******* ******* ******* 
@@ -123,6 +129,11 @@ class Modelo extends THREE.Object3D {
     // Una vez configurado el accionador, se lanza la animación
     this.activeAction.play();    
   }
+
+  getDistancia(inicio,fin)
+  {
+      return Math.sqrt(Math.pow(inicio.x - fin.x, 2) + Math.pow(inicio.z - fin.z, 2));
+  }
   
   // ******* ******* ******* ******* ******* ******* ******* 
   
@@ -130,6 +141,41 @@ class Modelo extends THREE.Object3D {
     // Hay que pedirle al mixer que actualice las animaciones que controla
     var dt = this.clock.getDelta();
     if (this.mixer) this.mixer.update (dt);
+
+    var distanciaConObjetivo = this.getDistancia(this.position,this.objetivo);
+    
+    if(distanciaConObjetivo > 5)
+    {
+      if(!this.corriendo)
+      {
+          this.corriendo = true;
+         // this.fadeToAction('punch',true,1);
+      }
+
+        if(this.position.x < this.objetivo.x)
+        {
+          this.position.x += 1 * dt;
+        } 
+        else
+        {
+          this.position.x -= 1 * dt;
+        }
+
+        if(this.position.z < this.objetivo.z)
+        {
+          this.position.z += 1 * dt;
+        } 
+        else
+        {
+          this.position.z -= 1 * dt;
+        }
+
+        this.lookAt(this.objetivo);
+    }
+    else
+    {
+      this.corriendo = false;
+    }
   }
 }
 
