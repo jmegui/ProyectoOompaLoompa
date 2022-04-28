@@ -47,10 +47,10 @@ class MyScene extends THREE.Scene {
     // Por último creamos el modelo.
     // El modelo puede incluir su parte de la interfaz gráfica de usuario. Le pasamos la referencia a 
     // la gui y el texto bajo el que se agruparán los controles de la interfaz que añada el modelo.
-    this.jugador = new Jugador(this.gui, "Controles de la Caja");
+    this.jugador = new Jugador(this.gui, "Controles de la Caja",this.renderer);
 
-    //Para la pulsacion de teclas
-    this.map = {37: false, 38: false, 39: false, 40: false};
+    //Para la pulsacion de teclas (izquierda, arriba, derecha, abajo) (w,a,s,d)
+    this.map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false};
 
     this.camera = this.jugador.getCamera();
     //this.createCamera();
@@ -60,7 +60,6 @@ class MyScene extends THREE.Scene {
     this.add(this.umpalumpa);
 
     this.add (this.jugador);
-
   }
   
   initStats() {
@@ -237,17 +236,17 @@ class MyScene extends THREE.Scene {
     this.jugador.update();
 
     //Se ejecuta el movimiento
-    if (this.map[38]) {
+    if (this.map[38] || this.map[87]) {
       this.jugador.avanzar(true);
     }
-    if (this.map[40]) {
+    if (this.map[40] || this.map[83]) {
       this.jugador.avanzar(false);
     }
-    if (this.map[39]) {
-      this.jugador.girar(true);
+    if (this.map[39] || this.map[68]) {
+      this.jugador.lateral(true);
     }
-    if (this.map[37]){
-      this.jugador.girar(false);
+    if (this.map[37] || this.map[65]){
+      this.jugador.lateral(false);
     }
     
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
@@ -269,8 +268,8 @@ $(function () {
   // Se añaden los listener de la aplicación. En este caso, el que va a comprobar cuándo se modifica el tamaño de la ventana de la aplicación.
   window.addEventListener ("resize", () => scene.onWindowResize());
 
-  //Gestionar el movimiento con las teclas
-  var map = {37: false, 38: false, 39: false, 40: false};
+  //Gestionar el movimiento con las teclas (izquierda, arriba, derecha, abajo) (w,a,s,d)
+  var map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false};
 
   //Eventos de pulsacion de teclas
   window.addEventListener("keydown", function (e) {
@@ -286,7 +285,17 @@ $(function () {
       scene.pulsaTecla(map);
     }
   });
-  
+
+  window.addEventListener("click", function(e){
+    document.body.requestPointerLock();
+  });
+
+  window.addEventListener("mousemove", function(e){
+    if(document.pointerLockElement==document.body){
+      scene.jugador.girarCamara(e.movementX,e.movementY);
+    }
+  });
+
   // Que no se nos olvide, la primera visualización.
   scene.update();
 });
