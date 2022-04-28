@@ -138,6 +138,48 @@ class Modelo extends THREE.Object3D {
   }
   
   // ******* ******* ******* ******* ******* ******* ******* 
+
+  aproximar(velocidad)
+  {
+    if(Math.abs(this.objetivo.x - this.position.x) >= Math.abs(this.objetivo.z - this.position.z))
+    {
+      if(this.position.x < this.objetivo.x)
+      {
+        var x = this.position.x;
+        this.position.x += velocidad;
+        this.position.z = (((this.objetivo.z - this.position.z)/(this.objetivo.x - x)) * (this.position.x - x) + this.position.z);
+      }
+      else if(this.position.x == this.objetivo.x)
+      {
+          //this.position.z += dt;
+      }
+      else
+      {
+        var x = this.position.x;
+        this.position.x -= velocidad;
+        this.position.z = (((this.objetivo.z - this.position.z)/(this.objetivo.x - x)) * (this.position.x - x) + this.position.z);
+      }
+    }
+    else
+    {
+      if(this.position.z < this.objetivo.z)
+      {
+        var z = this.position.z;
+        this.position.z += velocidad;
+        this.position.x = (((this.objetivo.x - this.position.x)/(this.objetivo.z - z)) * (this.position.z - z) + this.position.x);
+      }
+      else if(this.position.z == this.objetivo.z)
+      {
+          this.position.z += velocidad;
+      }
+      else
+      {
+        var z = this.position.z;
+        this.position.z -= velocidad;
+        this.position.x = (((this.objetivo.x - this.position.x)/(this.objetivo.z - z)) * (this.position.z - z) + this.position.x); }
+    }
+  }
+
   
   update () {
     // Hay que pedirle al mixer que actualice las animaciones que controla
@@ -155,56 +197,9 @@ class Modelo extends THREE.Object3D {
           this.fadeToAction('Walking',true,1);
       }
 
-      /*
-      if(this.position.x < this.objetivo.x)
-      this.position.x = this.position.x + ( dt );
-      else
-      this.position.x = this.position.x - ( dt );
-
-      if(this.position.z < this.objetivo.z)
-      this.position.z = this.position.z + ( dt );
-      else
-      this.position.z = this.position.z - (dt );
-      */
-
-      if(Math.abs(this.objetivo.x - this.position.x) >= Math.abs(this.objetivo.z - this.position.z))
-      {
-        if(this.position.x < this.objetivo.x)
-        {
-          var x = this.position.x;
-          this.position.x += dt;
-          this.position.z = (((this.objetivo.z - this.position.z)/(this.objetivo.x - x)) * (this.position.x - x) + this.position.z);
-        }
-        else if(this.position.x == this.objetivo.x)
-        {
-            //this.position.z += dt;
-        }
-        else
-        {
-          var x = this.position.x;
-          this.position.x -= dt;
-          this.position.z = (((this.objetivo.z - this.position.z)/(this.objetivo.x - x)) * (this.position.x - x) + this.position.z);
-        }
-      }
-      else
-      {
-        if(this.position.z < this.objetivo.z)
-        {
-          var z = this.position.z;
-          this.position.z += dt;
-          this.position.x = (((this.objetivo.x - this.position.x)/(this.objetivo.z - z)) * (this.position.z - z) + this.position.x);
-        }
-        else if(this.position.z == this.objetivo.z)
-        {
-            this.position.z += dt;
-        }
-        else
-        {
-          var z = this.position.z;
-          this.position.z -= dt;
-          this.position.x = (((this.objetivo.x - this.position.x)/(this.objetivo.z - z)) * (this.position.z - z) + this.position.x);        }
-      }
-
+      var velocidad = 2 * dt;
+      this.aproximar(velocidad);
+    
     }
     else
     {
@@ -220,6 +215,13 @@ class Modelo extends THREE.Object3D {
     this.mixer.update (dt)
     }
   }
+
+
+
+
+
 }
+
+
 
 export { Modelo };
