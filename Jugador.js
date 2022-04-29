@@ -18,6 +18,9 @@ class Jugador extends THREE.Object3D {
     this.vertical = new THREE.Vector3(0,1,0);
     this.frente = new THREE.Vector3(1,0,0);
     this.cantidadAvance = 12;
+
+    //Almacena inclinacion cabeza
+    this.inclinacion = 0;
     
     this.createCameraPrimeraPersona();
 
@@ -50,7 +53,13 @@ class Jugador extends THREE.Object3D {
 
   girarCamara(x,y){
     this.rotateOnAxis (this.vertical, -x/500);
-    this.camera.rotateOnAxis(this.frente,-y/500);
+
+    //Limita el giro de la cabeza hacia arriba y abajo
+    if((y<0 && this.inclinacion>(-90*Math.PI/180)) || (y>0 && this.inclinacion<(90*Math.PI/180))){
+      this.inclinacion += y/500;
+      this.camera.rotateOnAxis(this.frente,-y/500);
+      console.log(this.inclinacion);
+    }
   }
 
   getCamera(){
