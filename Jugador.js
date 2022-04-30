@@ -1,5 +1,6 @@
 import * as THREE from './libs/three.module.js'
 import { TrackballControls } from '../libs/TrackballControls.js'
+import * as TWEEN from '../libs/tween.esm.js'
  
 class Jugador extends THREE.Object3D {
   constructor(gui,titleGui,rend) {
@@ -21,6 +22,10 @@ class Jugador extends THREE.Object3D {
 
     //Almacena inclinacion cabeza
     this.inclinacion = 0;
+
+    //Administrar salto
+    this.saltando = false;
+    this.direccionAlmacenada = {a:0,l:0};
     
     this.createCameraPrimeraPersona();
 
@@ -37,18 +42,21 @@ class Jugador extends THREE.Object3D {
     this.add (this.camera);
   }
 
-  avanzar(avanza){
-    var direccion = this.dt*this.cantidadAvance;
-    if(!avanza) direccion = -this.dt*this.cantidadAvance;
+  avanzar(adelante,derecha){
+    if(!this.saltando){
+      if(adelante && derecha){
+        var distancia = Math.sqrt(2*this.cantidadAvance*this.cantidadAvance);
+        this.translateOnAxis (this.frente, this.dt*(adelante*distancia/2));
+        this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(derecha*distancia/2));
+      }
 
-    this.translateOnAxis (this.frente, direccion);
-  }
+      else if(derecha)
+        this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(this.cantidadAvance*derecha));
+
+      else if(adelante)
+        this.translateOnAxis (this.frente, this.dt*(this.cantidadAvance*adelante));
   
-  lateral(derecha){
-    var direccion = -this.dt*this.cantidadAvance;
-    if(derecha) direccion = this.dt*this.cantidadAvance;
-
-    this.translateOnAxis (new THREE.Vector3(0,0,1), direccion);
+    }
   }
 
   girarCamara(x,y){
@@ -58,12 +66,41 @@ class Jugador extends THREE.Object3D {
     if((y<0 && this.inclinacion>(-90*Math.PI/180)) || (y>0 && this.inclinacion<(90*Math.PI/180))){
       this.inclinacion += y/500;
       this.camera.rotateOnAxis(this.frente,-y/500);
-      console.log(this.inclinacion);
     }
   }
 
   getCamera(){
     return this.camera;
+  }
+
+  saltar(adelante,atras,derecha,izquierda){
+    if(!this.saltando){
+      this.saltando = true;
+
+      if(adelante) this.direccionAlmacenada.a = 1;
+      else if(atras) this.direccionAlmacenada.a = -1;
+
+      if(derecha) this.direccionAlmacenada.l = 1;
+      else if(izquierda) this.direccionAlmacenada.l = -1;
+
+      var origen = {y: this.position.y}; 
+      var destino = {y: this.position.y+2};
+      var suelo = {y: this.position.y}; 
+
+      var caer=new TWEEN.Tween(destino).to(suelo,300).easing(TWEEN.Easing.Quadratic.In).onComplete(()=>{this.saltando = false;this.direccionAlmacenada={a:0,l:0};});
+
+      var saltar=new TWEEN.Tween(origen).to(destino,300).easing(TWEEN.Easing.Quadratic.Out).chain(caer);
+
+      saltar.onUpdate ( ( ) =>{
+        this.position.y = origen.y;
+      });
+
+      caer.onUpdate ( ( ) =>{
+        this.position.y = destino.y;
+      });
+
+      saltar.start();
+    }
   }
   
   createGUI (gui,titleGui) {
@@ -71,6 +108,22 @@ class Jugador extends THREE.Object3D {
   
   update () {
     this.dt = this.clock.getDelta();
+    TWEEN.update();
+    
+    //Si estoy saltando aplico el desplazamiento almacenado
+    if(this.saltando){
+      if(this.direccionAlmacenada.a && this.direccionAlmacenada.l){
+        var distancia = Math.sqrt(this.cantidadAvance*this.cantidadAvance);
+        this.translateOnAxis (this.frente, this.dt*(this.direccionAlmacenada.a*distancia/2));
+        this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(this.direccionAlmacenada.l*distancia/2));
+      }
+
+      else if(this.direccionAlmacenada.l)
+        this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(this.cantidadAvance*this.direccionAlmacenada.l));
+
+      else if(this.direccionAlmacenada.a)
+        this.translateOnAxis (this.frente, this.dt*(this.cantidadAvance*this.direccionAlmacenada.a));
+    }
   }
 }
 

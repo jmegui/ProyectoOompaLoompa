@@ -50,7 +50,7 @@ class MyScene extends THREE.Scene {
     this.jugador = new Jugador(this.gui, "Controles de la Caja",this.renderer);
 
     //Para la pulsacion de teclas (izquierda, arriba, derecha, abajo) (w,a,s,d)
-    this.map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false};
+    this.map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false, 32:false};
 
     this.camera = this.jugador.getCamera();
     //this.createCamera();
@@ -236,17 +236,28 @@ class MyScene extends THREE.Scene {
     this.jugador.update();
 
     //Se ejecuta el movimiento
-    if (this.map[38] || this.map[87]) {
-      this.jugador.avanzar(true);
+
+    var adelante = 0;
+    var lateral = 0;
+
+    if ((this.map[38] || this.map[87]) && !(this.map[40] || this.map[83])) {
+      adelante = 1;
     }
-    if (this.map[40] || this.map[83]) {
-      this.jugador.avanzar(false);
+    else if (this.map[40] || this.map[83]) {
+      adelante = -1;
     }
-    if (this.map[39] || this.map[68]) {
-      this.jugador.lateral(true);
+    if ((this.map[39] || this.map[68]) && !(this.map[37] || this.map[65])) {
+      lateral = 1;
     }
     if (this.map[37] || this.map[65]){
-      this.jugador.lateral(false);
+      lateral = -1;
+    }
+
+    this.jugador.avanzar(adelante,lateral);
+
+    //Se ejecuta el salto y se le pasa la direccion de ese momento
+    if(this.map[32]){
+      this.jugador.saltar(this.map[38] || this.map[87],this.map[40] || this.map[83],this.map[39] || this.map[68],this.map[37] || this.map[65]);
     }
     
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
@@ -268,8 +279,8 @@ $(function () {
   // Se añaden los listener de la aplicación. En este caso, el que va a comprobar cuándo se modifica el tamaño de la ventana de la aplicación.
   window.addEventListener ("resize", () => scene.onWindowResize());
 
-  //Gestionar el movimiento con las teclas (izquierda, arriba, derecha, abajo) (w,a,s,d)
-  var map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false};
+  //Gestionar el movimiento con las teclas (izquierda, arriba, derecha, abajo) (w,a,s,d) (espacio)
+  var map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false, 32:false};
 
   //Eventos de pulsacion de teclas
   window.addEventListener("keydown", function (e) {
