@@ -60,9 +60,9 @@ class MyScene extends THREE.Scene {
 
     this.umpalumpa = new Robot();
 
-    this.add(this.umpalumpa);
-
     this.add (this.jugador);
+
+    this.add(this.umpalumpa);
   }
   
   initStats() {
@@ -311,7 +311,7 @@ $(function () {
     }
   });
 
-  window.addEventListener("click", function(e){
+  document.getElementById("letreroPausa").addEventListener("click", function(e){
     document.body.requestPointerLock();
   });
 
