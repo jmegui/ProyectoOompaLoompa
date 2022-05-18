@@ -116,7 +116,7 @@ class MyScene extends THREE.Scene {
 
   createEntorno() {
     var path = "./entorno/"
-  var format = '.jpg'
+  var format = '.png'
   var urls = [
   path + 'px' + format , path + 'nx' + format ,
   path + 'py' + format , path + 'ny' + format ,
