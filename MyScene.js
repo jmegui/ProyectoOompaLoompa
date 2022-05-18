@@ -231,6 +231,14 @@ class MyScene extends THREE.Scene {
     //Comprobamos si se encuentra en pausa
     this.pausa = (document.pointerLockElement!=document.body);
 
+    //Si lo esta mostramos el letrero de pausa, si no lo ocultamos
+    if(this.pausa){
+      document.getElementById("letreroPausa").style.display="block";
+    }
+    else{
+      document.getElementById("letreroPausa").style.display="none";
+    }
+
     if (this.stats) this.stats.update();
 
     this.umpalumpa.objetivo = this.jugador.position;
