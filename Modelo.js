@@ -181,38 +181,41 @@ class Modelo extends THREE.Object3D {
   }
 
   
-  update () {
+  update (pausa) {
     // Hay que pedirle al mixer que actualice las animaciones que controla
     var dt = this.clock.getDelta();
-    if (this.mixer) 
-    {
 
-    var distanciaConObjetivo = this.getDistancia(this.position,this.objetivo);
-    
-    if(distanciaConObjetivo > 7)
-    {
-      if(!this.corriendo)
+    if(!pausa){
+      if (this.mixer) 
       {
-          this.corriendo = true;
-          this.fadeToAction('Walking',true,1);
-      }
-
-      var velocidad = 2 * dt;
-      this.aproximar(velocidad);
-    
-    }
-    else
-    {
-      if(this.corriendo)
+  
+      var distanciaConObjetivo = this.getDistancia(this.position,this.objetivo);
+      
+      if(distanciaConObjetivo > 7)
       {
-        this.fadeToAction('Punch',true,1);
+        if(!this.corriendo)
+        {
+            this.corriendo = true;
+            this.fadeToAction('Walking',true,1);
+        }
+  
+        var velocidad = 2 * dt;
+        this.aproximar(velocidad);
+      
       }
-      this.corriendo = false;
-
-    }
-
-    this.lookAt(this.objetivo);
-    this.mixer.update (dt)
+      else
+      {
+        if(this.corriendo)
+        {
+          this.fadeToAction('Punch',true,1);
+        }
+        this.corriendo = false;
+  
+      }
+  
+      this.lookAt(this.objetivo);
+      this.mixer.update (dt)
+      }
     }
   }
 

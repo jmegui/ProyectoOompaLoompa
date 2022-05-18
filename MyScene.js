@@ -38,6 +38,9 @@ class MyScene extends THREE.Scene {
     
     // Un suelo 
     this.createGround ();
+
+    //Almacena si el juego se encuentra en pausa
+    this.pausa = false;
     
     // Y unos ejes. Imprescindibles para orientarnos sobre dónde están las cosas
     this.axis = new THREE.AxesHelper (5);
@@ -225,15 +228,18 @@ class MyScene extends THREE.Scene {
 
   update () {
     
+    //Comprobamos si se encuentra en pausa
+    this.pausa = (document.pointerLockElement!=document.body);
+
     if (this.stats) this.stats.update();
 
     this.umpalumpa.objetivo = this.jugador.position;
-    this.umpalumpa.update();
+    this.umpalumpa.update(this.pausa);
     
     // Se actualizan los elementos de la escena para cada frame
     
     // Se actualiza el resto del modelo
-    this.jugador.update();
+    this.jugador.update(this.pausa);
 
     //Se ejecuta el movimiento
 
@@ -253,13 +259,13 @@ class MyScene extends THREE.Scene {
       lateral = -1;
     }
 
-    this.jugador.avanzar(adelante,lateral);
+    if(!this.pausa) this.jugador.avanzar(adelante,lateral);
 
     //Se ejecuta el salto y se le pasa la direccion de ese momento
     if(this.map[32]){
       this.jugador.saltar(this.map[38] || this.map[87],this.map[40] || this.map[83],this.map[39] || this.map[68],this.map[37] || this.map[65]);
     }
-    
+
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render (this, this.getCamera());
 

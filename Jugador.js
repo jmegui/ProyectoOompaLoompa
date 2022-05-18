@@ -106,23 +106,25 @@ class Jugador extends THREE.Object3D {
   createGUI (gui,titleGui) {
   }
   
-  update () {
+  update (pausa) {
     this.dt = this.clock.getDelta();
-    TWEEN.update();
-    
-    //Si estoy saltando aplico el desplazamiento almacenado
-    if(this.saltando){
-      if(this.direccionAlmacenada.a && this.direccionAlmacenada.l){
-        var distancia = Math.sqrt(this.cantidadAvance*this.cantidadAvance);
-        this.translateOnAxis (this.frente, this.dt*(this.direccionAlmacenada.a*distancia/2));
-        this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(this.direccionAlmacenada.l*distancia/2));
+
+    if(!pausa){
+      TWEEN.update();
+      //Si estoy saltando aplico el desplazamiento almacenado
+      if(this.saltando){
+        if(this.direccionAlmacenada.a && this.direccionAlmacenada.l){
+          var distancia = Math.sqrt(this.cantidadAvance*this.cantidadAvance);
+          this.translateOnAxis (this.frente, this.dt*(this.direccionAlmacenada.a*distancia/2));
+          this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(this.direccionAlmacenada.l*distancia/2));
+        }
+
+        else if(this.direccionAlmacenada.l)
+          this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(this.cantidadAvance*this.direccionAlmacenada.l));
+
+        else if(this.direccionAlmacenada.a)
+          this.translateOnAxis (this.frente, this.dt*(this.cantidadAvance*this.direccionAlmacenada.a));
       }
-
-      else if(this.direccionAlmacenada.l)
-        this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(this.cantidadAvance*this.direccionAlmacenada.l));
-
-      else if(this.direccionAlmacenada.a)
-        this.translateOnAxis (this.frente, this.dt*(this.cantidadAvance*this.direccionAlmacenada.a));
     }
   }
 }
