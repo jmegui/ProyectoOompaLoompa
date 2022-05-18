@@ -26,6 +26,10 @@ class Robot extends THREE.Object3D {
     this.corriendo = false;
 
     this.position.z = 10;
+
+    //Almacena la vida y el tiempo de animacion del puñetazo para realizar los golpes
+    this.vida = 100;
+    this.puñetazo = 0.1;
   }
   
   // ******* ******* ******* ******* ******* ******* ******* 
@@ -200,7 +204,7 @@ class Robot extends THREE.Object3D {
   
         var velocidad = 2 * dt;
         this.aproximar(velocidad);
-      
+        this.puñetazo = 0.1;
       }
       else
       {
@@ -209,7 +213,11 @@ class Robot extends THREE.Object3D {
           this.fadeToAction('Punch',true,1);
         }
         this.corriendo = false;
-  
+      
+        this.puñetazo+=dt*2;
+        if(this.puñetazo>=1){
+          this.puñetazo = 0;
+        }
       }
   
       this.lookAt(this.objetivo);
@@ -218,6 +226,12 @@ class Robot extends THREE.Object3D {
     }
   }
 
+
+
+
+
 }
+
+
 
 export { Robot };

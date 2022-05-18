@@ -12,7 +12,8 @@
             margin: 0;
             overflow: hidden; 
         }
-        #letreroPausa{
+
+        #letreroPausa, #letreroFinPartida{
             width: 50%;
             height: 12%;
             border-radius: 7px;
@@ -27,13 +28,51 @@
             left: 25%;
             display: none;
         }
+
+        #letreroPausa:hover, #letreroFinPartida:hover{
+            cursor: pointer;
+        }
+
+        #mira{
+            width: 4%;
+            height: 5%;
+            position: fixed;
+            top: 47.5%;
+            left: 47%;
+        }
+
+        #barraVidaJugador{
+            width: 80%;
+            height: 3%;
+            background-color: rgb(129, 0, 0);
+            border: 5%;
+            border-style:solid;
+            border-color: black;
+            position: fixed;
+            top:92%;
+            left: 10%;
+        }
+        #vidaJugador{
+            width: 100%;
+            height: 100%;
+            background-color: green;
+            position: relative;
+            text-align: center;
+            color: white;
+        }
     </style>
 </head>
 <body>
+    <img src="imgs/mira.png" id="mira">
     <div id = "letreroPausa">
         <p>PAUSA</p>
-        <p>Click en la pantalla para continuar</p>
+        <p>Click aqui para continuar</p>
     </div>
+    <div id = "letreroFinPartida">
+        <p>FIN DE LA PARTIDA</p>
+        <p>Click aqui para reiniciar</p>
+    </div>
+    <div id="barraVidaJugador"><div id="vidaJugador"><span id="porcentajeVida"></span></div></div>
     <!-- Div which will hold the Output -->
     <div id="WebGL-output">
     </div>

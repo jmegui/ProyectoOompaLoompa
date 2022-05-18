@@ -1,6 +1,8 @@
 import * as THREE from './libs/three.module.js'
 import { TrackballControls } from '../libs/TrackballControls.js'
 import * as TWEEN from '../libs/tween.esm.js'
+import { MTLLoader } from '../libs/MTLLoader.js'
+import { OBJLoader } from '../libs/OBJLoader.js' 
  
 class Jugador extends THREE.Object3D {
   constructor(gui,titleGui,rend) {
@@ -29,6 +31,29 @@ class Jugador extends THREE.Object3D {
     
     this.createCameraPrimeraPersona();
 
+    //Carga el modelo de la pistola
+    var materialLoader = new MTLLoader();
+    var objectLoader = new OBJLoader();
+    materialLoader.load('/models/pistola/11684_gun_v1_l3.mtl',
+        ( materials ) => {
+          objectLoader.setMaterials(materials);
+          objectLoader.load ('/models/pistola/11684_gun_v1_l3.obj',
+            (object) => {
+              this.pistola = object;
+              this.pistola.rotateOnAxis(new THREE.Vector3(0,1,0),Math.PI);
+              this.pistola.rotateOnAxis(new THREE.Vector3(1,0,0),-90*Math.PI/180);
+              this.pistola.scale.x=0.1;
+              this.pistola.scale.y=0.1;
+              this.pistola.scale.z=0.1;
+              this.pistola.position.x += 2; 
+              this.pistola.position.y += 1;
+              this.pistola.position.z += 1;
+              this .add (this.pistola) ;
+            }, null, null);
+          });
+
+      //Almacenamos el porcentaje de vida del jugador
+      this.vida = 100;
   }
 
   createCameraPrimeraPersona(){
@@ -66,6 +91,7 @@ class Jugador extends THREE.Object3D {
     if((y<0 && this.inclinacion>(-90*Math.PI/180)) || (y>0 && this.inclinacion<(90*Math.PI/180))){
       this.inclinacion += y/500;
       this.camera.rotateOnAxis(this.frente,-y/500);
+      this.pistola.rotateOnAxis(new THREE.Vector3(0,1,0),-y/500);
     }
   }
 

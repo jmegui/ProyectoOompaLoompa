@@ -13,8 +13,6 @@ import {Robot} from './Robot.js'
 import { Jugador } from './Jugador.js'
 
 import {Fabrica} from './fabrica.js'
-import { FramebufferTexture } from './libs/three.module.js'
-
  
 /// La clase fachada del modelo
 /**
@@ -50,6 +48,9 @@ class MyScene extends THREE.Scene {
     // Y unos ejes. Imprescindibles para orientarnos sobre dónde están las cosas
     this.axis = new THREE.AxesHelper (5);
     this.add (this.axis);
+
+    //Para indicar el fin de partida
+    this.finPartida = false;
     
     
     // Por último creamos el modelo.
@@ -67,9 +68,9 @@ class MyScene extends THREE.Scene {
 
     this.fabrica = new Fabrica();
 
-    this.add(this.umpalumpa);
-
     this.add (this.jugador);
+
+    this.add(this.umpalumpa);
 
     this.add(this.fabrica);
   }
@@ -125,6 +126,7 @@ class MyScene extends THREE.Scene {
 var textureCube = new THREE.CubeTextureLoader().load (urls) ;
 this.background = textureCube ;
   }
+
 
   createGround () {
     // El suelo es un Mesh, necesita una geometría y un material.
@@ -265,10 +267,23 @@ this.background = textureCube ;
     this.umpalumpa.objetivo = this.jugador.position;
     this.umpalumpa.update(this.pausa);
     
-    // Se actualizan los elementos de la escena para cada frame
-    
-    // Se actualiza el resto del modelo
+    // Se actualiza el jugador
     this.jugador.update(this.pausa);
+
+    //Si el robot esta golpeando se actualiza la vida del jugador
+    if(this.umpalumpa.puñetazo==0 && !this.pausa) this.jugador.vida-=4;
+  
+    //Si el jugador esta muerto se acaba la partida
+    if(this.jugador.vida==0){
+      this.pausa = true;
+      this.finPartida = true;
+      document.exitPointerLock();
+      document.getElementById("letreroFinPartida").style.display="block";
+    }
+
+    //Se actualiza la barra de vida del jugador
+    document.getElementById("vidaJugador").style.width=this.jugador.vida+"%";
+    document.getElementById("porcentajeVida").textContent=this.jugador.vida+"%";
 
     //Se ejecuta el movimiento
 
@@ -301,7 +316,9 @@ this.background = textureCube ;
     // Este método debe ser llamado cada vez que queramos visualizar la escena de nuevo.
     // Literalmente le decimos al navegador: "La próxima vez que haya que refrescar la pantalla, llama al método que te indico".
     // Si no existiera esta línea,  update()  se ejecutaría solo la primera vez.
-    requestAnimationFrame(() => this.update())
+    if(!this.finPartida){
+      requestAnimationFrame(() => this.update())
+    }
   }
 }
 
@@ -332,8 +349,12 @@ $(function () {
     }
   });
 
-  window.addEventListener("click", function(e){
+  document.getElementById("letreroPausa").addEventListener("click", function(e){
     document.body.requestPointerLock();
+  });
+
+  document.getElementById("letreroFinPartida").addEventListener("click", function(e){
+    location.reload();
   });
 
   window.addEventListener("mousemove", function(e){
