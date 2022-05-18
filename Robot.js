@@ -10,13 +10,13 @@ class Robot extends THREE.Object3D {
     var loader = new GLTFLoader();
     loader.load( '../models/gltf/robot.glb', ( gltf ) => {
       // El modelo está en el atributo  scene
-      var model = gltf.scene;
+      this.model= gltf.scene;
       // Y las animaciones en el atributo  animations
       var animations = gltf.animations;
       // No olvidarse de colgar el modelo del Object3D de esta instancia de la clase (this)
-      that.add( model );
-//       console.log (animations);
-      that.createActions(model,animations);
+      that.add( this.model );
+
+      that.createActions(this.model,animations);
       
       // Se crea la interfaz de usuario que nos permite ver las animaciones que tiene el modelo y qué realizan
     }, undefined, ( e ) => { console.error( e ); }
@@ -30,6 +30,16 @@ class Robot extends THREE.Object3D {
     //Almacena la vida y el tiempo de animacion del puñetazo para realizar los golpes
     this.vida = 100;
     this.puñetazo = 0.1;
+    this.tiempoMuerto = 0;
+
+    //Almacena el espacio de colision
+    const cilindro = new THREE.CylinderGeometry( 1.7, 1.7, 8, 32 );
+    var material = new THREE.MeshLambertMaterial({color: 0x00ff00, transparent: true, opacity: 0.0});
+    material.transparent = true;
+    this.colision = new THREE.Mesh( cilindro, material );
+    this.colision.userData = this;
+    this.add( this.colision );
+
   }
   
   // ******* ******* ******* ******* ******* ******* ******* 
@@ -42,7 +52,6 @@ class Robot extends THREE.Object3D {
     //    y se gestiona a través de dicho accionador
     // El mixer es el controlador general de los accionadores particulares
     this.mixer = new THREE.AnimationMixer (model);
-    console.log(this.mixer);
 
     // El siguiente diccionario contendrá referencias a los diferentes accionadores particulares 
     // El diccionario Lo usaremos para dirigirnos a ellos por los nombres de las animaciones que gestionan
@@ -183,6 +192,27 @@ class Robot extends THREE.Object3D {
     }
   }
 
+  eliminarGeometria(modelo){
+    if(modelo.children.length==0 && modelo.geometry!=null){
+      modelo.geometry.dispose();
+    }
+    else{
+      for(var i = 0; i<modelo.children.length;i++){
+        this.eliminarGeometria(modelo.children[i]);
+      }
+    }
+  }
+
+  recibeDisparo(){
+    this.vida -=35;
+
+    if(this.vida<=0){
+      this.vida = 0;
+      this.eliminarGeometria(this.model);
+      this.fadeToAction('Death',false,1);
+    }
+  }
+
   
   update (pausa) {
     // Hay que pedirle al mixer que actualice las animaciones que controla
@@ -191,37 +221,42 @@ class Robot extends THREE.Object3D {
     if(!pausa){
       if (this.mixer) 
       {
-  
-      var distanciaConObjetivo = this.getDistancia(this.position,this.objetivo);
+        //Si no esta muerto
+        if(this.vida>0){
+          var distanciaConObjetivo = this.getDistancia(this.position,this.objetivo);
       
-      if(distanciaConObjetivo > 7)
-      {
-        if(!this.corriendo)
-        {
-            this.corriendo = true;
-            this.fadeToAction('Walking',true,1);
-        }
-  
-        var velocidad = 2 * dt;
-        this.aproximar(velocidad);
-        this.puñetazo = 0.1;
-      }
-      else
-      {
-        if(this.corriendo)
-        {
-          this.fadeToAction('Punch',true,1);
-        }
-        this.corriendo = false;
+          if(distanciaConObjetivo > 7)
+          {
+            if(!this.corriendo)
+            {
+                this.corriendo = true;
+                this.fadeToAction('Walking',true,1);
+            }
       
-        this.puñetazo+=dt*2;
-        if(this.puñetazo>=1){
-          this.puñetazo = 0;
+            var velocidad = 2 * dt;
+            this.aproximar(velocidad);
+            this.puñetazo = 0.1;
+          }
+          else
+          {
+            if(this.corriendo)
+            {
+              this.fadeToAction('Punch',true,1);
+            }
+            this.corriendo = false;
+          
+            this.puñetazo+=dt*2;
+            if(this.puñetazo>=1){
+              this.puñetazo = 0;
+            }
+          }
+      
+          this.lookAt(this.objetivo);
         }
-      }
-  
-      this.lookAt(this.objetivo);
-      this.mixer.update (dt)
+        else{
+          this.tiempoMuerto+=dt;
+        }
+        this.mixer.update (dt)
       }
     }
   }

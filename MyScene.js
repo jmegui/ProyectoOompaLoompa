@@ -266,7 +266,9 @@ this.background = textureCube ;
 
     this.umpalumpa.objetivo = this.jugador.position;
     this.umpalumpa.update(this.pausa);
-    
+    //Si hace 0.5 segundos que ha muerto se elimina
+    if(this.umpalumpa.tiempoMuerto>0.5) this.remove(this.umpalumpa);
+
     // Se actualiza el jugador
     this.jugador.update(this.pausa);
 
@@ -349,6 +351,7 @@ $(function () {
     }
   });
 
+  //Deteccion click reanudar o reiniciar partida
   document.getElementById("letreroPausa").addEventListener("click", function(e){
     document.body.requestPointerLock();
   });
@@ -357,9 +360,44 @@ $(function () {
     location.reload();
   });
 
+  //Deteccion giro de camara
   window.addEventListener("mousemove", function(e){
     if(document.pointerLockElement==document.body){
       scene.jugador.girarCamara(e.movementX,e.movementY);
+    }
+  });
+
+  //Deteccion disparo
+  window.addEventListener("click", function(event){
+    if(document.pointerLockElement==document.body){
+      // Se obtiene la posición del clic
+      // en coordenadas de dispositivo normalizado
+      // − La esquina inferior izquierda tiene la coordenada (−1,−1) // − La esquina superior derecha tiene la coordenada (1,1) 
+      var mouse = new THREE.Vector2 ();
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1; 
+      mouse.y = 1 - 2 * (event.clientY / window.innerHeight);
+
+      //Se construye un rayo que parte de la cámara ( el ojo del 
+      // y que pasa por la posición donde se ha hecho clic
+      var raycaster = new THREE.Raycaster ();
+      raycaster.setFromCamera(mouse, scene.camera) ;
+
+      // Hay que buscar qué objetos intersecan con el rayo
+      //Es una operación costosa , solo se buscan intersecciones 
+      // con los objetos que interesan en cada momento
+      // Las referencias de dichos objetos se guardan en un array
+
+      var pickableObjects = [scene.umpalumpa.colision];
+
+      //Los objetos alcanzados por el rayo , entre los seleccionables , se devuelven en otro array
+      var pickedObjects = raycaster.intersectObjects ( pickableObjects , true ) ;
+
+      // pickedObjects es un vector ordenado desde el objeto más cercano
+      if (pickedObjects.length > 0) {
+        // Se puede referenciar el Mesh clicado
+        var selectedObject = pickedObjects[0].object;
+        selectedObject.userData.recibeDisparo();
+      } 
     }
   });
 
