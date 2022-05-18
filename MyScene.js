@@ -12,6 +12,9 @@ import {Robot} from './Robot.js'
 
 import { Jugador } from './Jugador.js'
 
+import {Fabrica} from './fabrica.js'
+import { FramebufferTexture } from './libs/three.module.js'
+
  
 /// La clase fachada del modelo
 /**
@@ -39,6 +42,8 @@ class MyScene extends THREE.Scene {
     // Un suelo 
     this.createGround ();
 
+    this.createEntorno();
+
     //Almacena si el juego se encuentra en pausa
     this.pausa = false;
     
@@ -60,9 +65,13 @@ class MyScene extends THREE.Scene {
 
     this.umpalumpa = new Robot();
 
+    this.fabrica = new Fabrica();
+
     this.add(this.umpalumpa);
 
     this.add (this.jugador);
+
+    this.add(this.fabrica);
   }
   
   initStats() {
@@ -103,6 +112,18 @@ class MyScene extends THREE.Scene {
     this.cameraControl.panSpeed = 0.5;
     // Debe orbitar con respecto al punto de mira de la cámara
     this.cameraControl.target = look;
+  }
+
+  createEntorno() {
+    var path = "./entorno/"
+  var format = '.jpg'
+  var urls = [
+  path + 'px' + format , path + 'nx' + format ,
+  path + 'py' + format , path + 'ny' + format ,
+  path + 'pz' + format , path + 'nz' + format
+  ] ;
+var textureCube = new THREE.CubeTextureLoader().load (urls) ;
+this.background = textureCube ;
   }
 
   createGround () {
