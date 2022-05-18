@@ -218,12 +218,6 @@ class Robot extends THREE.Object3D {
     }
   }
 
-
-
-
-
 }
-
-
 
 export { Robot };
