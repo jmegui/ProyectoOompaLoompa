@@ -32,6 +32,9 @@ class Robot extends THREE.Object3D {
     this.puñetazo = 0.1;
     this.tiempoMuerto = 0;
 
+    //Creamos la barra de vida
+    this.crearBarraDeVida();
+
     //Almacena el espacio de colision
     const cilindro = new THREE.CylinderGeometry( 1.7, 1.7, 8, 32 );
     var material = new THREE.MeshLambertMaterial({color: 0x00ff00, transparent: true, opacity: 0.0});
@@ -203,6 +206,27 @@ class Robot extends THREE.Object3D {
     }
   }
 
+  crearBarraDeVida(){
+    const geometria = new THREE.BoxGeometry( 3, 0.3, 0.1 );
+    const material = new THREE.MeshBasicMaterial( {color: 0xff0000} );
+    this.barraVida = new THREE.Mesh( geometria, material );
+    this.barraVida.position.y = 5;
+
+    const geometria2 = new THREE.BoxGeometry( 3.1, 0.31, 0.11 );
+    const material2 = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+    this.cantidadVida = new THREE.Mesh( geometria2, material2 );
+    this.cantidadVida.position.y = 5;
+
+    this.add(this.barraVida);
+    this.add(this.cantidadVida);
+  }
+
+  actualizarVida(){
+    this.cantidadVida.position.x = 1.55;
+    this.cantidadVida.scale.set(this.vida/100,1,1);
+    this.cantidadVida.position.x = -1.55+1.55*this.vida/100;
+  }
+
   recibeDisparo(){
     this.vida -=35;
 
@@ -211,8 +235,9 @@ class Robot extends THREE.Object3D {
       this.eliminarGeometria(this.model);
       this.fadeToAction('Death',false,1);
     }
-  }
 
+    this.actualizarVida();
+  }
   
   update (pausa) {
     // Hay que pedirle al mixer que actualice las animaciones que controla
