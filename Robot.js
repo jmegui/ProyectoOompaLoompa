@@ -36,11 +36,11 @@ class Robot extends THREE.Object3D {
     this.crearBarraDeVida();
 
     //Almacena el espacio de colision
-    const cilindro = new THREE.CylinderGeometry( 1.7, 1.7, 8, 32 );
-    var material = new THREE.MeshLambertMaterial({color: 0x00ff00, transparent: true, opacity: 0.0});
-    material.transparent = true;
+    const cilindro = new THREE.CylinderGeometry( 1.7, 1.7, 4, 32 );
+    var material = new THREE.MeshLambertMaterial({color: 0x00ff00, transparent: true,opacity: 0.0});
     this.colision = new THREE.Mesh( cilindro, material );
     this.colision.userData = this;
+    this.colision.position.y = 2;
     this.add( this.colision );
 
   }
@@ -232,6 +232,10 @@ class Robot extends THREE.Object3D {
 
     if(this.vida<=0){
       this.vida = 0;
+      this.barraVida.geometry.dispose();
+      this.barraVida.material.dispose();
+      this.cantidadVida.geometry.dispose();
+      this.cantidadVida.material.dispose();
       this.eliminarGeometria(this.model);
       this.fadeToAction('Death',false,1);
     }

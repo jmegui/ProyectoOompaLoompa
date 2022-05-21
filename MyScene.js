@@ -5,7 +5,6 @@ import * as THREE from '../libs/three.module.js'
 import { GUI } from '../libs/dat.gui.module.js'
 import { TrackballControls } from '../libs/TrackballControls.js'
 import { Stats } from '../libs/stats.module.js'
-
 // Clases de mi proyecto
 
 import {Robot} from './Robot.js'
@@ -32,7 +31,7 @@ class MyScene extends THREE.Scene {
     this.initStats();
     
     // Construimos los distinos elementos que tendremos en la escena
-    
+
     // Todo elemento que se desee sea tenido en cuenta en el renderizado de la escena debe pertenecer a esta. Bien como hijo de la escena (this en esta clase) o como hijo de un elemento que ya esté en la escena.
     // Tras crear cada elemento se añadirá a la escena con   this.add(variable)
     this.createLights ();
@@ -56,7 +55,7 @@ class MyScene extends THREE.Scene {
     // Por último creamos el modelo.
     // El modelo puede incluir su parte de la interfaz gráfica de usuario. Le pasamos la referencia a 
     // la gui y el texto bajo el que se agruparán los controles de la interfaz que añada el modelo.
-    this.jugador = new Jugador(this.gui, "Controles de la Caja",this.renderer);
+    this.jugador = new Jugador(this.gui, "Controles de la Caja");
 
     //Para la pulsacion de teclas (izquierda, arriba, derecha, abajo) (w,a,s,d)
     this.map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false, 32:false};
@@ -370,12 +369,15 @@ $(function () {
   //Deteccion disparo
   window.addEventListener("click", function(event){
     if(document.pointerLockElement==document.body){
+      //Se inicia el efectoDisparo
+      scene.jugador.disparo();
+
       // Se obtiene la posición del clic
       // en coordenadas de dispositivo normalizado
       // − La esquina inferior izquierda tiene la coordenada (−1,−1) // − La esquina superior derecha tiene la coordenada (1,1) 
       var mouse = new THREE.Vector2 ();
-      mouse.x = (event.clientX / window.innerWidth) * 2 - 1; 
-      mouse.y = 1 - 2 * (event.clientY / window.innerHeight);
+      mouse.x = 0; 
+      mouse.y = 0;
 
       //Se construye un rayo que parte de la cámara ( el ojo del 
       // y que pasa por la posición donde se ha hecho clic

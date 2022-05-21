@@ -5,17 +5,10 @@ import { MTLLoader } from '../libs/MTLLoader.js'
 import { OBJLoader } from '../libs/OBJLoader.js' 
  
 class Jugador extends THREE.Object3D {
-  constructor(gui,titleGui,rend) {
+  constructor(gui,titleGui) {
     super();
 
     this.clock = new THREE.Clock();
-    
-    // Se crea la parte de la interfaz que corresponde a la caja
-    // Se crea primero porque otros métodos usan las variables que se definen para la interfaz
-    this.createGUI(gui,titleGui,rend);
-
-    //
-    this.renderer = rend;
 
     //Valores posicion
     this.vertical = new THREE.Vector3(0,1,0);
@@ -45,15 +38,24 @@ class Jugador extends THREE.Object3D {
               this.pistola.scale.x=0.1;
               this.pistola.scale.y=0.1;
               this.pistola.scale.z=0.1;
+
+              //Creo el efecto de disparo
+              this.efectoDisparo();
+              this .add (this.pistola) ;
+
               this.pistola.position.x += 2; 
               this.pistola.position.y += 1;
               this.pistola.position.z += 1;
-              this .add (this.pistola) ;
             }, null, null);
           });
+    
 
       //Almacenamos el porcentaje de vida del jugador
       this.vida = 100;
+
+      //Gestionar disparo
+      this.disparando = false;
+      this.tiempoDisparo = 0;
   }
 
   createCameraPrimeraPersona(){
@@ -129,7 +131,24 @@ class Jugador extends THREE.Object3D {
     }
   }
   
-  createGUI (gui,titleGui) {
+  disparo(){
+    this.pistola.add(this.efectoD);
+    this.disparando = true;
+  }
+
+  efectoDisparo(){
+    var geometria = new THREE.BoxGeometry (10,10,0.1);
+    var textura = new THREE.TextureLoader().load('../imgs/disparo.png');
+    var material = new THREE.MeshBasicMaterial ({map: textura, transparent: true , opacity:0.6});
+    
+    // Ya se puede construir el Mesh
+    this.efectoD  = new THREE.Mesh (geometria, material);
+
+    this.efectoD.rotateX(Math.PI/2);
+    this.efectoD.rotateY(Math.PI/2);
+    this.efectoD.position.z += 13;
+    this.efectoD.position.x -= 11.5;
+    this.efectoD.position.y -=1;
   }
   
   update (pausa) {
@@ -151,7 +170,18 @@ class Jugador extends THREE.Object3D {
         else if(this.direccionAlmacenada.a)
           this.translateOnAxis (this.frente, this.dt*(this.cantidadAvance*this.direccionAlmacenada.a));
       }
+
+      if(this.disparando){
+        this.tiempoDisparo += this.dt;
+
+        if(this.tiempoDisparo>=0.1){
+          this.pistola.remove(this.efectoD);
+          this.tiempoDisparo = 0;
+          this.disparando = false;
+        }
+      }
     }
+
   }
 }
 
