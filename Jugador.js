@@ -101,15 +101,15 @@ class Jugador extends THREE.Object3D {
     return this.camera;
   }
 
-  saltar(adelante,atras,derecha,izquierda){
+  saltar(adelante,atras,derecha,izquierda, velocidad){
     if(!this.saltando){
       this.saltando = true;
 
-      if(adelante) this.direccionAlmacenada.a = 1;
-      else if(atras) this.direccionAlmacenada.a = -1;
+      if(adelante) this.direccionAlmacenada.a = velocidad;
+      else if(atras) this.direccionAlmacenada.a = -velocidad;
 
-      if(derecha) this.direccionAlmacenada.l = 1;
-      else if(izquierda) this.direccionAlmacenada.l = -1;
+      if(derecha) this.direccionAlmacenada.l = velocidad;
+      else if(izquierda) this.direccionAlmacenada.l = -velocidad;
 
       var origen = {y: this.position.y}; 
       var destino = {y: this.position.y+2};

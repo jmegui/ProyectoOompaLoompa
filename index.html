@@ -52,6 +52,22 @@
             display: none;
         }
 
+        #letreroPausa{
+            width: 60%;
+            height: 90%;
+            position: fixed;
+            top: 5%;
+            left: 20%
+        }
+
+        .instrucciones{
+            width: 70%;
+            height: 80%;
+            display: block;
+            position: relative;
+            left: 15%;
+        }
+
         #letreroPausa:hover, #letreroFinPartida:hover{
             cursor: pointer;
         }
@@ -109,8 +125,11 @@
 <body>
     <div class="tiempo"><span class="tituloTiempo">&nbsp;Tiempo:</span><br><span id="tiempoPartida"></span></div>
     <img src="imgs/mira.png" id="mira">
+    <div id="barraVidaFabrica"><div id="vidaFabrica"><span id="porcentajeVidaF"></span></div></div>
+    <div id="barraVidaJugador"><div id="vidaJugador"><span id="porcentajeVidaJ"></span></div></div>
     <div id = "letreroPausa">
         <p>PAUSA</p>
+        <img class="instrucciones" src="./imgs/instrucciones.png"/>
         <p>Click aqui para continuar</p>
     </div>
     <div id = "letreroFinPartida">
@@ -118,8 +137,6 @@
         <p>Tiempo alcanzado: <span id="tiempoFinal"></span> s</p>
         <p>Click aqui para reiniciar</p>
     </div>
-    <div id="barraVidaFabrica"><div id="vidaFabrica"><span id="porcentajeVidaF"></span></div></div>
-    <div id="barraVidaJugador"><div id="vidaJugador"><span id="porcentajeVidaJ"></span></div></div>
     <!-- Div which will hold the Output -->
     <div id="WebGL-output">
     </div>
