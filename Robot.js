@@ -22,10 +22,12 @@ class Robot extends THREE.Object3D {
     }, undefined, ( e ) => { console.error( e ); }
     );
 
-    this.objetivo = new Vector3();
+    this.objetivo = ['fabrica',new Vector3(0,0,0)];
     this.corriendo = false;
 
-    this.position.z = 10;
+    //Genero su posición de manera aleatoria con respecto al centro
+    this.rotateY(Math.random()*2*Math.PI);
+    this.translateOnAxis(new THREE.Vector3(0,0,-1),75);
 
     //Almacena la vida y el tiempo de animacion del puñetazo para realizar los golpes
     this.vida = 100;
@@ -156,15 +158,15 @@ class Robot extends THREE.Object3D {
 
   aproximar(velocidad)
   {
-    if(Math.abs(this.objetivo.x - this.position.x) >= Math.abs(this.objetivo.z - this.position.z))
+    if(Math.abs(this.objetivo[1].x - this.position.x) >= Math.abs(this.objetivo[1].z - this.position.z))
     {
-      if(this.position.x < this.objetivo.x)
+      if(this.position.x < this.objetivo[1].x)
       {
         var x = this.position.x;
         this.position.x += velocidad;
-        this.position.z = (((this.objetivo.z - this.position.z)/(this.objetivo.x - x)) * (this.position.x - x) + this.position.z);
+        this.position.z = (((this.objetivo[1].z - this.position.z)/(this.objetivo[1].x - x)) * (this.position.x - x) + this.position.z);
       }
-      else if(this.position.x == this.objetivo.x)
+      else if(this.position.x == this.objetivo[1].x)
       {
           //this.position.z += dt;
       }
@@ -172,18 +174,18 @@ class Robot extends THREE.Object3D {
       {
         var x = this.position.x;
         this.position.x -= velocidad;
-        this.position.z = (((this.objetivo.z - this.position.z)/(this.objetivo.x - x)) * (this.position.x - x) + this.position.z);
+        this.position.z = (((this.objetivo[1].z - this.position.z)/(this.objetivo[1].x - x)) * (this.position.x - x) + this.position.z);
       }
     }
     else
     {
-      if(this.position.z < this.objetivo.z)
+      if(this.position.z < this.objetivo[1].z)
       {
         var z = this.position.z;
         this.position.z += velocidad;
-        this.position.x = (((this.objetivo.x - this.position.x)/(this.objetivo.z - z)) * (this.position.z - z) + this.position.x);
+        this.position.x = (((this.objetivo[1].x - this.position.x)/(this.objetivo[1].z - z)) * (this.position.z - z) + this.position.x);
       }
-      else if(this.position.z == this.objetivo.z)
+      else if(this.position.z == this.objetivo[1].z)
       {
           this.position.z += velocidad;
       }
@@ -191,7 +193,7 @@ class Robot extends THREE.Object3D {
       {
         var z = this.position.z;
         this.position.z -= velocidad;
-        this.position.x = (((this.objetivo.x - this.position.x)/(this.objetivo.z - z)) * (this.position.z - z) + this.position.x); }
+        this.position.x = (((this.objetivo[1].x - this.position.x)/(this.objetivo[1].z - z)) * (this.position.z - z) + this.position.x); }
     }
   }
 
@@ -243,7 +245,7 @@ class Robot extends THREE.Object3D {
     this.actualizarVida();
   }
   
-  update (pausa) {
+  update (pausa, jugador) {
     // Hay que pedirle al mixer que actualice las animaciones que controla
     var dt = this.clock.getDelta();
 
@@ -252,9 +254,25 @@ class Robot extends THREE.Object3D {
       {
         //Si no esta muerto
         if(this.vida>0){
-          var distanciaConObjetivo = this.getDistancia(this.position,this.objetivo);
-      
-          if(distanciaConObjetivo > 7)
+          var distanciaConJugador = this.getDistancia(this.position,jugador);
+          var distanciaMinima = 0;
+
+          //Elijo el objetivo
+          if(distanciaConJugador > 20){
+            //Si la distancia con el jugador es grande su objetivo es la fabrica
+            this.objetivo = ['fabrica',new Vector3(0,0,0)];
+            var distanciaConObjetivo = this.getDistancia(this.position,this.objetivo[1]);
+            distanciaMinima = 10;
+          }
+          else{
+            //Si la distancia con el jugador es pequeña su objetivo es el jugador
+            this.objetivo = ['jugador',jugador];
+            var distanciaConObjetivo = this.getDistancia(this.position,this.objetivo[1]);
+            distanciaMinima = 7;
+          }
+
+          //Elijo la accion a aplicar
+          if(distanciaConObjetivo > distanciaMinima)
           {
             if(!this.corriendo)
             {
@@ -279,8 +297,8 @@ class Robot extends THREE.Object3D {
               this.puñetazo = 0;
             }
           }
-      
-          this.lookAt(this.objetivo);
+
+          this.lookAt(this.objetivo[1]);
         }
         else{
           this.tiempoMuerto+=dt;

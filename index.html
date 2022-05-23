@@ -11,11 +11,34 @@
         body{
             margin: 0;
             overflow: hidden; 
+            font: 100% sans-serif;
+        }
+
+        .tiempo{
+            width: 10%;
+            height: 10%;
+            display: inline-block;
+            position: fixed;
+            top: 1%;
+            left: 1%;
+            background-color: rgba(255, 255, 255, 0.758);
+            font-size: 200%;
+            border-radius: 10px;
+            border-style: solid;
+            text-align: center;
+        }
+
+        .tituloTiempo{
+            width: 100%;
+            height: 50%;
+            position: relative;
+            top: 0%;
+            left: 0%;
         }
 
         #letreroPausa, #letreroFinPartida{
             width: 50%;
-            height: 12%;
+            height: 15%;
             border-radius: 7px;
             border: 1%;
             border-style: inset;
@@ -41,7 +64,7 @@
             left: 49%;
         }
 
-        #barraVidaJugador{
+        #barraVidaFabrica{
             width: 80%;
             height: 3%;
             background-color: rgb(129, 0, 0);
@@ -49,10 +72,31 @@
             border-style:solid;
             border-color: black;
             position: fixed;
-            top:92%;
+            top:90%;
             left: 10%;
         }
+        #vidaFabrica{
+            width: 100%;
+            height: 100%;
+            background-color: rgb(91, 110, 255);
+            position: relative;
+            text-align: center;
+            color: white;
+        }
+
+        #barraVidaJugador{
+            width: 50%;
+            height: 2%;
+            background-color: rgb(129, 0, 0);
+            border: 5%;
+            border-style:solid;
+            border-color: black;
+            position: fixed;
+            top:95%;
+            left: 25%;
+        }
         #vidaJugador{
+            display: fixed;
             width: 100%;
             height: 100%;
             background-color: green;
@@ -63,6 +107,7 @@
     </style>
 </head>
 <body>
+    <div class="tiempo"><span class="tituloTiempo">&nbsp;Tiempo:</span><br><span id="tiempoPartida"></span></div>
     <img src="imgs/mira.png" id="mira">
     <div id = "letreroPausa">
         <p>PAUSA</p>
@@ -70,9 +115,11 @@
     </div>
     <div id = "letreroFinPartida">
         <p>FIN DE LA PARTIDA</p>
+        <p>Tiempo alcanzado: <span id="tiempoFinal"></span> s</p>
         <p>Click aqui para reiniciar</p>
     </div>
-    <div id="barraVidaJugador"><div id="vidaJugador"><span id="porcentajeVida"></span></div></div>
+    <div id="barraVidaFabrica"><div id="vidaFabrica"><span id="porcentajeVidaF"></span></div></div>
+    <div id="barraVidaJugador"><div id="vidaJugador"><span id="porcentajeVidaJ"></span></div></div>
     <!-- Div which will hold the Output -->
     <div id="WebGL-output">
     </div>

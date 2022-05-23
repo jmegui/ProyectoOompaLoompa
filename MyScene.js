@@ -29,6 +29,8 @@ class MyScene extends THREE.Scene {
     this.gui = this.createGUI ();
     
     this.initStats();
+
+    this.clock = new THREE.Clock();
     
     // Construimos los distinos elementos que tendremos en la escena
 
@@ -39,6 +41,7 @@ class MyScene extends THREE.Scene {
     // Un suelo 
     this.createGround ();
 
+    //El entorno
     this.createEntorno();
 
     //Almacena si el juego se encuentra en pausa
@@ -51,27 +54,33 @@ class MyScene extends THREE.Scene {
     //Para indicar el fin de partida
     this.finPartida = false;
     
-    
-    // Por último creamos el modelo.
     // El modelo puede incluir su parte de la interfaz gráfica de usuario. Le pasamos la referencia a 
     // la gui y el texto bajo el que se agruparán los controles de la interfaz que añada el modelo.
     this.jugador = new Jugador(this.gui, "Controles de la Caja");
+    //Asignamos como cámara la cámara del jugador
+    this.camera = this.jugador.getCamera();
+
+    this.add (this.jugador);
 
     //Para la pulsacion de teclas (izquierda, arriba, derecha, abajo) (w,a,s,d)
     this.map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false, 32:false};
 
-    this.camera = this.jugador.getCamera();
-    //this.createCamera();
+    //Creo a los enemigos en un array
+    this.umpalumpas = [new Robot()];
+    this.add(this.umpalumpas[0]);
 
-    this.umpalumpa = new Robot();
+    for(var i = 0; i<9; i++){
+      this.umpalumpas.push(new Robot());
+      this.add(this.umpalumpas[i+1]);
+    }
 
+    //Añado la fabrica
     this.fabrica = new Fabrica();
 
-    this.add (this.jugador);
-
-    this.add(this.umpalumpa);
-
     this.add(this.fabrica);
+
+    //Creo una variable para almacenar el tiempo de duración de la partida
+    this.tiempo = 0;
   }
   
   initStats() {
@@ -88,30 +97,6 @@ class MyScene extends THREE.Scene {
     $("#Stats-output").append( stats.domElement );
     
     this.stats = stats;
-  }
-  
-  createCamera () {
-    // Para crear una cámara le indicamos
-    //   El ángulo del campo de visión en grados sexagesimales
-    //   La razón de aspecto ancho/alto
-    //   Los planos de recorte cercano y lejano
-    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-    // También se indica dónde se coloca
-    this.camera.position.set (20, 10, 20);
-    // Y hacia dónde mira
-    var look = new THREE.Vector3 (0,0,0);
-    this.camera.lookAt(look);
-    this.add (this.camera);
-    
-    // Para el control de cámara usamos una clase que ya tiene implementado los movimientos de órbita
-    this.cameraControl = new TrackballControls (this.camera, this.renderer.domElement);
-    // Se configuran las velocidades de los movimientos
-    this.cameraControl.rotateSpeed = 5;
-    this.cameraControl.zoomSpeed = -2;
-    this.cameraControl.panSpeed = 0.5;
-    // Debe orbitar con respecto al punto de mira de la cámara
-    this.cameraControl.target = look;
   }
 
   createEntorno() {
@@ -244,50 +229,20 @@ this.background = textureCube ;
     this.renderer.setSize (window.innerWidth, window.innerHeight);
   }
 
+  //Actualizamos el atributo de pulsación de teclas
   pulsaTecla (map) {
     this.map = map;
   }
 
-  update () {
-    
-    //Comprobamos si se encuentra en pausa
-    this.pausa = (document.pointerLockElement!=document.body);
-
-    //Si lo esta mostramos el letrero de pausa, si no lo ocultamos
-    if(this.pausa){
-      document.getElementById("letreroPausa").style.display="block";
-    }
-    else{
-      document.getElementById("letreroPausa").style.display="none";
-    }
-
-    if (this.stats) this.stats.update();
-
-    this.umpalumpa.objetivo = this.jugador.position;
-    this.umpalumpa.update(this.pausa);
-    //Si hace 0.5 segundos que ha muerto se elimina
-    if(this.umpalumpa.tiempoMuerto>0.5) this.remove(this.umpalumpa);
-
-    // Se actualiza el jugador
-    this.jugador.update(this.pausa);
-
-    //Si el robot esta golpeando se actualiza la vida del jugador
-    if(this.umpalumpa.puñetazo==0 && !this.pausa) this.jugador.vida-=4;
-  
-    //Si el jugador esta muerto se acaba la partida
-    if(this.jugador.vida==0){
-      this.pausa = true;
-      this.finPartida = true;
-      document.exitPointerLock();
-      document.getElementById("letreroFinPartida").style.display="block";
-    }
-
-    //Se actualiza la barra de vida del jugador
+  actualizarBarrasDeVida(){
+    document.getElementById("vidaFabrica").style.width=this.fabrica.vida/5+"%";
+    document.getElementById("porcentajeVidaF").textContent="Fabrica/"+this.fabrica.vida/5+"%";
     document.getElementById("vidaJugador").style.width=this.jugador.vida+"%";
-    document.getElementById("porcentajeVida").textContent=this.jugador.vida+"%";
+    document.getElementById("porcentajeVidaJ").textContent="Jugador/"+this.jugador.vida+"%";
+  }
 
-    //Se ejecuta el movimiento
-
+  //Se aplican los controles al jugador
+  aplicarControles(){
     var adelante = 0;
     var lateral = 0;
 
@@ -310,6 +265,70 @@ this.background = textureCube ;
     if(this.map[32]){
       this.jugador.saltar(this.map[38] || this.map[87],this.map[40] || this.map[83],this.map[39] || this.map[68],this.map[37] || this.map[65]);
     }
+  }
+
+  //Comprobar final partida
+  comprobarFinalPartida(){
+    //Si el jugador esta muerto se acaba la partida
+    if(this.jugador.vida==0 || this.fabrica.vida==0){
+      this.pausa = true;
+      this.finPartida = true;
+      document.exitPointerLock();
+      document.getElementById("tiempoFinal").textContent = Math.round(this.tiempo);
+      document.getElementById("letreroFinPartida").style.display="block";
+    }
+  }
+
+  update () {
+
+    //Comprobamos si se encuentra en pausa
+    this.pausa = (document.pointerLockElement!=document.body);
+    //Si lo esta mostramos el letrero de pausa, si no lo ocultamos y se actualiza el contador de partida
+    if(this.pausa){
+      this.clock.getDelta();
+      document.getElementById("letreroPausa").style.display="block";
+    }
+    else{
+      document.getElementById("letreroPausa").style.display="none";
+      //Actualizamos el contador de partida
+      this.tiempo += this.clock.getDelta();
+      document.getElementById("tiempoPartida").textContent=Math.round(this.tiempo);
+    }
+
+    if (this.stats) this.stats.update();
+
+    // Se actualiza el jugador
+    this.jugador.update(this.pausa);
+
+    //Actualizo a todos los enemigos
+    for(var i = 0; i<this.umpalumpas.length; i++){
+      this.umpalumpas[i].update(this.pausa,this.jugador.position);
+
+      //Si el robot esta golpeando se actualiza la vida del jugador o de la fabrica
+      if(this.umpalumpas[i].puñetazo==0 && !this.pausa){
+        if(this.umpalumpas[i].objetivo[0]=='fabrica' && this.fabrica.vida>0)
+          this.fabrica.vida-=4;
+        else if(this.jugador.vida>0)
+          this.jugador.vida-=4;
+      }
+
+      //Si hace 0.5 segundos que ha muerto se elimina y se añade nuevo enemigo
+      if(this.umpalumpas[i].tiempoMuerto>0.5){
+        this.remove(this.umpalumpas[i]);
+        this.umpalumpas.splice(i,1);
+        this.umpalumpas.push(new Robot());
+        this.add(this.umpalumpas[this.umpalumpas.length-1]);
+      }
+    }
+  
+    //Se comprueba si se ha acabado la partida
+    this.comprobarFinalPartida();
+
+    //Se actualiza la barra de vida del jugador y la fabrica
+    this.actualizarBarrasDeVida();
+
+    //Se ejecuta el movimiento
+    this.aplicarControles();
 
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render (this, this.getCamera());
@@ -388,8 +407,11 @@ $(function () {
       //Es una operación costosa , solo se buscan intersecciones 
       // con los objetos que interesan en cada momento
       // Las referencias de dichos objetos se guardan en un array
+      var pickableObjects = [scene.umpalumpas[0].colision];
 
-      var pickableObjects = [scene.umpalumpa.colision];
+      for(var i = 1; i<scene.umpalumpas.length; i++){
+        pickableObjects.push(scene.umpalumpas[i].colision);
+      }
 
       //Los objetos alcanzados por el rayo , entre los seleccionables , se devuelven en otro array
       var pickedObjects = raycaster.intersectObjects ( pickableObjects , true ) ;

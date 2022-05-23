@@ -17,6 +17,9 @@ class Fabrica extends THREE.Object3D {
     this.add (box);
 
     box.position.y = 5;
+  
+    //Almacenamos el porcentaje de vida de la fabrica
+    this.vida = 500;
 
   }
   
