@@ -22,12 +22,12 @@ class Corazon extends THREE.Object3D {
 
     var BarridoGeom = new THREE.ExtrudeGeometry( shape, extrudeSettings );
     // Como material se crea uno a partir de un color
-    var BarridoMat = new THREE.MeshPhongMaterial({color: 0xCF0000});
+    var BarridoMat = new THREE.MeshToonMaterial({color: 0xCF0000});
     // Ya podemos construir el Mesh
-    var barrido = new THREE.Mesh (BarridoGeom, BarridoMat);
+    this.objeto = new THREE.Mesh (BarridoGeom, BarridoMat);
 
 
-    this.add (barrido);
+    this.add (this.objeto);
 
     
     // Las geometrías se crean centradas en el origen.
@@ -35,11 +35,24 @@ class Corazon extends THREE.Object3D {
     // subimos el Mesh de la caja la mitad de su altura
     this.rotateZ(Math.PI);
     this.scale.set(0.02,0.02,0.02);
+
+    //Genero su posición de manera aleatoria con respecto al centro
+    var distanciaAleatoria = Math.random()*(100-10)+10;
+    this.rotateY(Math.random()*2*Math.PI);
+    this.translateOnAxis(new THREE.Vector3(0,0,-1),distanciaAleatoria);
     this.position.y = 3;
-    this.position.x = 30;
+
+    this.tipo = "corazon";
+  }
+
+  getDistancia(inicio,fin)
+  {
+      return Math.sqrt(Math.pow(inicio.x - fin.x, 2) + Math.pow(inicio.z - fin.z, 2));
   }
   
-
+  intersecta(jugador){
+    return (this.getDistancia(this.position,jugador.position)<2);
+  }
   
   update () {
     // Con independencia de cómo se escriban las 3 siguientes líneas, el orden en el que se aplican las transformaciones es:

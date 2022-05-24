@@ -8,7 +8,11 @@ class Fabrica extends THREE.Object3D {
     var cartelFabrica = new THREE.BoxBufferGeometry(7,4,0.1);
     var cilin = new THREE.CylinderBufferGeometry(2,3,60,20,20,false);
     var portonGEO = new THREE.BoxBufferGeometry(7,7,0.1);
+<<<<<<< HEAD
     var tejadoGEO = new THREE.ConeBufferGeometry(10,4,4,4);
+=======
+    //var tejadoGEO = new THREE.Buffer();
+>>>>>>> 4c4b7dd6b4024d9e868134492048c7c13d0ec667
 
     var loader = new THREE.TextureLoader();
     var textura = loader.load("./imgs/texturaFabrica.jpg");

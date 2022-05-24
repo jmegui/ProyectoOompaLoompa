@@ -82,12 +82,13 @@ class MyScene extends THREE.Scene {
 
     this.add(this.fabrica);
 
-    this.corazon = new Corazon();
-
-    this.add(this.corazon);
-
     //Creo una variable para almacenar el tiempo de duración de la partida
     this.tiempo = 0;
+
+    
+    //Añado variable consumible y un contador para la aparición de consumibles cada 15s
+    this.consumible = null;
+    this.tiempoConsumible = 0;
   }
   
   initStats() {
@@ -259,6 +260,7 @@ this.background = textureCube ;
       var dt = this.clock.getDelta();
       this.tiempo += dt;
       this.tempEnemigos += dt;
+      this.tiempoConsumible += dt;
       document.getElementById("tiempoPartida").textContent=Math.round(this.tiempo);
     }
   }
@@ -334,6 +336,60 @@ this.background = textureCube ;
     }
   }
 
+  //Se aplica al coger la calavera
+  eliminarTodosLosEnemigos(){
+    for(var i = 0; i<this.umpalumpas.length; i++){
+      this.umpalumpas[i].eliminacionInstantanea();
+    }
+  }
+
+  //Creo un consumible
+  crearConsumible(){
+    if(this.consumible!=null){
+      if(this.consumible.tipo=="corazon")this.consumible.objeto.geometry.dispose();
+      this.remove(this.consumible);
+    }
+
+    var aleatorio = Math.random();
+    //Hay un 20% de que salgan las calaveras, un 40% de que salga un corazon y un 40% de que salga una reparacion
+    if(aleatorio<0.4){
+      this.consumible = new Corazon();
+      this.add(this.consumible);
+    }
+    else if(aleatorio<0.8){
+      this.consumible = new Reparacion();
+      this.add(this.consumible);
+    }
+    else{
+      this.consumible = new Calaveras();
+      this.add(this.consumible);
+    }
+
+    this.tiempoConsumible = 0;
+  }
+
+  //Comprobar colision consumible
+  comprobarColisionConsumible(){
+    if(!this.pausa && this.consumible.intersecta(this.jugador)){
+      if(this.consumible.tipo=="corazon"){
+        this.jugador.vida += 20;
+        if(this.jugador.vida>100) this.jugador.vida = 100;
+        this.consumible.objeto.geometry.dispose();
+      }
+      else if(this.consumible.tipo=="reparacion"){
+        this.fabrica.vida += 100;
+        if(this.fabrica.vida>500) this.fabrica.vida = 500;
+      }
+      else{
+        this.eliminarTodosLosEnemigos();
+      }
+
+      this.remove(this.consumible);
+      this.consumible = null;
+      this.tiempoConsumible=0;
+    }
+  }
+
   update () {
     //Comprobamos si se encuentra en pausa
     this.comprobarPausa();
@@ -345,8 +401,6 @@ this.background = textureCube ;
 
     //Actualizo a todos los enemigos
     this.actualizarEnemigos();
-
-    this.corazon.update();
   
     //Se comprueba si se ha acabado la partida
     this.comprobarFinalPartida();
@@ -356,6 +410,16 @@ this.background = textureCube ;
 
     //Se ejecuta el movimiento
     this.aplicarControles();
+
+    //Compruebo si hay que crear un consumible y en caso afirmativo lo creo
+    if(this.tiempoConsumible>=15)
+    this.crearConsumible();
+
+    //Compruebo si hay colision con un consumible
+    if(this.consumible!=null){
+      this.consumible.update();
+      this.comprobarColisionConsumible();
+    }
 
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render (this, this.getCamera());
