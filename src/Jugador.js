@@ -56,6 +56,8 @@ class Jugador extends THREE.Object3D {
       //Gestionar disparo
       this.disparando = false;
       this.tiempoDisparo = 0;
+
+      this.translateOnAxis(new THREE.Vector3(1,0,0),-30);
   }
 
   crearCameraPrimeraPersona(){
@@ -119,13 +121,16 @@ class Jugador extends THREE.Object3D {
 
   //Para girar cámara con el ratón
   girarCamara(x,y){
-    this.rotateOnAxis (this.vertical, -x/500);
+    //Espero a que ser cargue el modelo de la pistola
+    if(this.pistola){
+      this.rotateOnAxis (this.vertical, -x/500);
 
-    //Limita el giro de la cabeza hacia arriba y abajo
-    if((y<0 && this.inclinacion>(-90*Math.PI/180)) || (y>0 && this.inclinacion<(90*Math.PI/180))){
-      this.inclinacion += y/500;
-      this.camera.rotateOnAxis(this.frente,-y/500);
-      this.pistola.rotateOnAxis(new THREE.Vector3(0,1,0),-y/500);
+      //Limita el giro de la cabeza hacia arriba y abajo
+      if((y<0 && this.inclinacion>(-90*Math.PI/180)) || (y>0 && this.inclinacion<(90*Math.PI/180))){
+        this.inclinacion += y/500;
+        this.camera.rotateOnAxis(this.frente,-y/500);
+        this.pistola.rotateOnAxis(new THREE.Vector3(0,1,0),-y/500);
+      }
     }
   }
 
