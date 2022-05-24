@@ -2,16 +2,16 @@
 // Clases de la biblioteca
 
 import * as THREE from '../libs/three.module.js'
-import { GUI } from '../libs/dat.gui.module.js'
-import { TrackballControls } from '../libs/TrackballControls.js'
-import { Stats } from '../libs/stats.module.js'
+import { GUI } from '../../libs/dat.gui.module.js'
+import { TrackballControls } from '../../libs/TrackballControls.js'
+import { Stats } from '../../libs/stats.module.js'
 // Clases de mi proyecto
 
 import {Robot} from './Robot.js'
 
 import { Jugador } from './Jugador.js'
 
-import {Fabrica} from './fabrica.js'
+import {Fabrica} from './Fabrica.js'
  
 /// La clase fachada del modelo
 /**
@@ -65,9 +65,10 @@ class MyScene extends THREE.Scene {
     //Para la pulsacion de teclas (izquierda, arriba, derecha, abajo) (w,a,s,d)
     this.map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false, 32:false, 16: false};
 
-    //Creo a los enemigos en un array
+    //Creo a los enemigos en un array y un temporizador para ir generandolos
     this.umpalumpas = [new Robot()];
     this.add(this.umpalumpas[0]);
+    this.tempEnemigos = 0;
 
     for(var i = 0; i<9; i++){
       this.umpalumpas.push(new Robot());
@@ -229,16 +230,59 @@ this.background = textureCube ;
     this.renderer.setSize (window.innerWidth, window.innerHeight);
   }
 
-  //Actualizamos el atributo de pulsación de teclas
-  pulsaTecla (map) {
-    this.map = map;
-  }
+  
 
   actualizarBarrasDeVida(){
     document.getElementById("vidaFabrica").style.width=this.fabrica.vida/5+"%";
     document.getElementById("porcentajeVidaF").textContent="Fabrica/"+this.fabrica.vida/5+"%";
     document.getElementById("vidaJugador").style.width=this.jugador.vida+"%";
     document.getElementById("porcentajeVidaJ").textContent="Jugador/"+this.jugador.vida+"%";
+  }
+
+  //Comprobar pausa
+  comprobarPausa(){
+    this.pausa = (document.pointerLockElement!=document.body);
+    //Si lo esta mostramos el letrero de pausa, si no lo ocultamos y se actualiza el contador de partida
+    if(this.pausa){
+      this.clock.getDelta();
+      document.getElementById("letreroPausa").style.display="block";
+    }
+    else{
+      document.getElementById("letreroPausa").style.display="none";
+      //Actualizamos el contador de partida y temporizador de enemigos
+      var dt = this.clock.getDelta();
+      this.tiempo += dt;
+      this.tempEnemigos += dt;
+      document.getElementById("tiempoPartida").textContent=Math.round(this.tiempo);
+    }
+  }
+
+  //Actualizo el estado de los enemigos
+  actualizarEnemigos(){
+    for(var i = 0; i<this.umpalumpas.length; i++){
+      this.umpalumpas[i].update(this.pausa,this.jugador.position);
+
+      //Si el robot esta golpeando se actualiza la vida del jugador o de la fabrica
+      if(this.umpalumpas[i].puñetazo==0 && !this.pausa){
+        if(this.umpalumpas[i].objetivo[0]=='fabrica' && this.fabrica.vida>0)
+          this.fabrica.vida-=4;
+        else if(this.jugador.vida>0)
+          this.jugador.vida-=4;
+      }
+
+      //Si hace 0.5 segundos que ha muerto se elimina y se añade nuevo enemigo
+      if(this.umpalumpas[i].tiempoMuerto>0.5){
+        this.remove(this.umpalumpas[i]);
+        this.umpalumpas.splice(i,1);
+        //Si hay menos de 5 enemigos añado uno
+        if(this.umpalumpas.length<6 || this.tempEnemigos>=2){
+          this.umpalumpas.push(new Robot());
+          this.add(this.umpalumpas[this.umpalumpas.length-1]);
+          //Si el temporizador ha llegado a 4 se reinicia
+          if(this.tempEnemigos>=2) this.tempEnemigos = 0;
+        }
+      }
+    }
   }
 
   //Se aplican los controles al jugador
@@ -285,20 +329,8 @@ this.background = textureCube ;
   }
 
   update () {
-
     //Comprobamos si se encuentra en pausa
-    this.pausa = (document.pointerLockElement!=document.body);
-    //Si lo esta mostramos el letrero de pausa, si no lo ocultamos y se actualiza el contador de partida
-    if(this.pausa){
-      this.clock.getDelta();
-      document.getElementById("letreroPausa").style.display="block";
-    }
-    else{
-      document.getElementById("letreroPausa").style.display="none";
-      //Actualizamos el contador de partida
-      this.tiempo += this.clock.getDelta();
-      document.getElementById("tiempoPartida").textContent=Math.round(this.tiempo);
-    }
+    this.comprobarPausa();
 
     if (this.stats) this.stats.update();
 
@@ -306,25 +338,7 @@ this.background = textureCube ;
     this.jugador.update(this.pausa);
 
     //Actualizo a todos los enemigos
-    for(var i = 0; i<this.umpalumpas.length; i++){
-      this.umpalumpas[i].update(this.pausa,this.jugador.position);
-
-      //Si el robot esta golpeando se actualiza la vida del jugador o de la fabrica
-      if(this.umpalumpas[i].puñetazo==0 && !this.pausa){
-        if(this.umpalumpas[i].objetivo[0]=='fabrica' && this.fabrica.vida>0)
-          this.fabrica.vida-=4;
-        else if(this.jugador.vida>0)
-          this.jugador.vida-=4;
-      }
-
-      //Si hace 0.5 segundos que ha muerto se elimina y se añade nuevo enemigo
-      if(this.umpalumpas[i].tiempoMuerto>0.5){
-        this.remove(this.umpalumpas[i]);
-        this.umpalumpas.splice(i,1);
-        this.umpalumpas.push(new Robot());
-        this.add(this.umpalumpas[this.umpalumpas.length-1]);
-      }
-    }
+    this.actualizarEnemigos();
   
     //Se comprueba si se ha acabado la partida
     this.comprobarFinalPartida();
@@ -363,15 +377,21 @@ $(function () {
   window.addEventListener("keydown", function (e) {
     if (e.keyCode in map) {
         map[e.keyCode] = true;
-        scene.pulsaTecla(map);
+        scene.map= map;
     }
   });
 
   window.addEventListener("keyup", function (e) {
     if (e.keyCode in map) {
       map[e.keyCode] = false;
-      scene.pulsaTecla(map);
+      scene.map = map;
     }
+  });
+
+  //Deteccion click Iniciar partida
+  document.getElementById("letreroInicio").addEventListener("click", function(e){
+    document.getElementById("letreroInicio").style.display="none";
+    document.body.requestPointerLock();
   });
 
   //Deteccion click reanudar o reiniciar partida

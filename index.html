@@ -6,7 +6,7 @@
     <title>Los Umpalumpas atacan de nuevo</title>
     <meta charset="utf-8">
     <script type="text/javascript" src="../libs/jquery.js"></script>
-    <script type="module" src="MyScene.js"></script>    
+    <script type="module" src="/src/MyScene.js"></script>    
     <style>
         body{
             margin: 0;
@@ -36,7 +36,7 @@
             left: 0%;
         }
 
-        #letreroPausa, #letreroFinPartida{
+        #letreroPausa, #letreroFinPartida, #letreroInicio{
             width: 50%;
             height: 15%;
             border-radius: 7px;
@@ -52,10 +52,26 @@
             display: none;
         }
 
+        #letreroInicio{
+            width: 100%;
+            height: 100%;
+            display: block;
+            top:0%;
+            left: 0%;
+            border-radius: 0%;            
+            border-style: none;
+        }
+
+        .instruccionesI1, .instruccionesI2{
+            width: 49%;
+            height: 80%;
+            display: inline-block;
+        }
+
+
         #letreroPausa{
             width: 60%;
             height: 90%;
-            position: fixed;
             top: 5%;
             left: 20%
         }
@@ -68,7 +84,7 @@
             left: 15%;
         }
 
-        #letreroPausa:hover, #letreroFinPartida:hover{
+        #letreroPausa:hover, #letreroFinPartida:hover, #letreroInicio:hover{
             cursor: pointer;
         }
 
@@ -136,6 +152,12 @@
         <p>FIN DE LA PARTIDA</p>
         <p>Tiempo alcanzado: <span id="tiempoFinal"></span> s</p>
         <p>Click aqui para reiniciar</p>
+    </div>
+    <div id = "letreroInicio">
+        <p>INICIO</p>
+        <img class="instruccionesI1" src="./imgs/instrucciones.png"/>
+        <img class="instruccionesI2" src="./imgs/instrucciones.png"/>
+        <p>Click para empezar</p>
     </div>
     <!-- Div which will hold the Output -->
     <div id="WebGL-output">

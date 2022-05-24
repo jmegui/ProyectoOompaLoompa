@@ -1,12 +1,15 @@
 import * as THREE from '../libs/three.module.js'
 import { GLTFLoader } from '../libs/GLTFLoader.js'
-import { Vector3 } from './libs/three.module.js';
+import { Vector3 } from '../libs/three.module.js';
  
 class Robot extends THREE.Object3D {
   constructor() {
     super();
+
+    //Creamos el reloj para controlar el delta time
     this.clock = new THREE.Clock();
-    var that = this;
+
+    //Cargamos el modelo del robot
     var loader = new GLTFLoader();
     loader.load( '../models/gltf/robot.glb', ( gltf ) => {
       // El modelo está en el atributo  scene
@@ -14,23 +17,24 @@ class Robot extends THREE.Object3D {
       // Y las animaciones en el atributo  animations
       var animations = gltf.animations;
       // No olvidarse de colgar el modelo del Object3D de esta instancia de la clase (this)
-      that.add( this.model );
+      this.add( this.model );
 
-      that.createActions(this.model,animations);
+      this.createActions(this.model,animations);
       
       // Se crea la interfaz de usuario que nos permite ver las animaciones que tiene el modelo y qué realizan
     }, undefined, ( e ) => { console.error( e ); }
     );
 
+    //Fijamos el objetivo
     this.objetivo = ['fabrica',new Vector3(0,0,0)];
+
+    //Almacenamos si se encuentra corriendo, su velocidad y su velocidad de animación
     this.corriendo = false;
+    this.velocidad  = 2.4;
 
-    //Genero su posición de manera aleatoria con respecto al centro
-    this.rotateY(Math.random()*2*Math.PI);
-    this.translateOnAxis(new THREE.Vector3(0,0,-1),75);
-
-    //Almacena la vida y el tiempo de animacion del puñetazo para realizar los golpes
+    //Almacena la vida, el tiempo de animacion del puñetazo para realizar los golpes y el tiempo que lleva muerto para eliminarlo de la escena
     this.vida = 100;
+    this.vidaMax = 100;
     this.puñetazo = 0.1;
     this.tiempoMuerto = 0;
 
@@ -38,13 +42,16 @@ class Robot extends THREE.Object3D {
     this.crearBarraDeVida();
 
     //Almacena el espacio de colision
-    const cilindro = new THREE.CylinderGeometry( 1.7, 1.7, 4, 32 );
-    var material = new THREE.MeshLambertMaterial({color: 0x00ff00, transparent: true,opacity: 0.0});
-    this.colision = new THREE.Mesh( cilindro, material );
-    this.colision.userData = this;
-    this.colision.position.y = 2;
-    this.add( this.colision );
+    this.crearColision();
 
+    //Genero su posición de manera aleatoria con respecto al centro
+    this.rotateY(Math.random()*2*Math.PI);
+    this.translateOnAxis(new THREE.Vector3(0,0,-1),75);
+
+    //Aplicar aleatoriedad para:
+    //  -Robot mas grande, con mas vida y mas lento
+    //  -Robot mas pequeño, con menos vida y mas rapido
+    this.enemigoEspecial();
   }
   
   // ******* ******* ******* ******* ******* ******* ******* 
@@ -86,37 +93,6 @@ class Robot extends THREE.Object3D {
     
   }
   
-  createGUI (gui, str) {
-    // La interfaz de usuario se crea a partir de la propia información que se ha
-    // cargado desde el archivo  gltf
-    this.guiControls = {
-      // En este campo estará la list de animaciones del archivo
-      current : 'Animaciones',
-      // Este campo nos permite ver cada animación una sola vez o repetidamente
-      repeat : false,
-      // Velocidad de la animación
-      speed : 1.0
-    }
-    
-    // Creamos y añadimos los controles de la interfaz de usuario
-    var folder = gui.addFolder (str);
-    var repeatCtrl = folder.add (this.guiControls, 'repeat').name('Repetitivo: ');
-    var clipCtrl = folder.add (this.guiControls, 'current').options(this.clipNames).name('Animaciones: ');
-    var speedCtrl = folder.add (this.guiControls, 'speed', -2.0, 2.0, 0.1).name('Speed: ');
-//     var that = this;
-    // Cada vez que uno de los controles de la interfaz de usuario cambie, 
-    //    llamamos al método que lance la animación elegida
-    clipCtrl.onChange (() => {
-      this.fadeToAction (this.guiControls.current, this.guiControls.repeat, this.guiControls.speed);
-    });
-    repeatCtrl.onChange (() => {
-      this.fadeToAction (this.guiControls.current, this.guiControls.repeat, this.guiControls.speed);
-    });
-    speedCtrl.onChange ((value) => {
-      this.activeAction.setEffectiveTimeScale(this.guiControls.speed);
-    });
-  }
-  
   // ******* ******* ******* ******* ******* ******* ******* 
   
   // Método para lanzar una animación
@@ -149,12 +125,41 @@ class Robot extends THREE.Object3D {
     this.activeAction.play();    
   }
 
+  // ******* ******* ******* ******* ******* ******* ******* 
+
+  enemigoEspecial(){
+    var aleatorio = Math.random();
+    
+    //Si el aleatorio es menor de 0.1 creo un gigante, mas lento pero con mas vida
+    if(aleatorio<0.1){
+      this.scale.set(2,2,2);
+      this.velocidad = 1;
+      this.vida = 300;
+      this.vidaMax = 300;
+    }
+    //Si el aleatorio es menor de 0.2 creo un enano, mas rapido pero con menos vida
+    else if(aleatorio<0.2){
+      this.scale.set(0.5,0.5,0.5);
+      this.velocidad = 5;
+      this.vida = 30;
+      this.vidaMax = 30;
+    }
+    
+  }
+
+  crearColision(){
+    const cilindro = new THREE.CylinderGeometry( 1.7, 1.7, 4, 32 );
+    var material = new THREE.MeshLambertMaterial({color: 0x00ff00, transparent: true,opacity: 0.0});
+    this.colision = new THREE.Mesh( cilindro, material );
+    this.colision.userData = this;
+    this.colision.position.y = 2;
+    this.add( this.colision );
+  }
+
   getDistancia(inicio,fin)
   {
       return Math.sqrt(Math.pow(inicio.x - fin.x, 2) + Math.pow(inicio.z - fin.z, 2));
   }
-  
-  // ******* ******* ******* ******* ******* ******* ******* 
 
   aproximar(velocidad)
   {
@@ -225,8 +230,8 @@ class Robot extends THREE.Object3D {
 
   actualizarVida(){
     this.cantidadVida.position.x = 1.55;
-    this.cantidadVida.scale.set(this.vida/100,1,1);
-    this.cantidadVida.position.x = -1.55+1.55*this.vida/100;
+    this.cantidadVida.scale.set(this.vida/this.vidaMax,1,1);
+    this.cantidadVida.position.x = -1.55+1.55*this.vida/this.vidaMax;
   }
 
   recibeDisparo(){
@@ -254,11 +259,12 @@ class Robot extends THREE.Object3D {
       {
         //Si no esta muerto
         if(this.vida>0){
+          var distanciaConFabrica = this.getDistancia(this.position,new Vector3(0,0,0));
           var distanciaConJugador = this.getDistancia(this.position,jugador);
           var distanciaMinima = 0;
 
           //Elijo el objetivo
-          if(distanciaConJugador > 20){
+          if(distanciaConJugador > 20 || distanciaConFabrica<11){
             //Si la distancia con el jugador es grande su objetivo es la fabrica
             this.objetivo = ['fabrica',new Vector3(0,0,0)];
             var distanciaConObjetivo = this.getDistancia(this.position,this.objetivo[1]);
@@ -277,10 +283,10 @@ class Robot extends THREE.Object3D {
             if(!this.corriendo)
             {
                 this.corriendo = true;
-                this.fadeToAction('Walking',true,1);
+                this.fadeToAction('Walking',true,this.velocidad/2);
             }
       
-            var velocidad = 2 * dt;
+            var velocidad = this.velocidad * dt;
             this.aproximar(velocidad);
             this.puñetazo = 0.1;
           }

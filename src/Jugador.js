@@ -1,4 +1,4 @@
-import * as THREE from './libs/three.module.js'
+import * as THREE from '../libs/three.module.js'
 import { TrackballControls } from '../libs/TrackballControls.js'
 import * as TWEEN from '../libs/tween.esm.js'
 import { MTLLoader } from '../libs/MTLLoader.js'
@@ -10,7 +10,7 @@ class Jugador extends THREE.Object3D {
 
     this.clock = new THREE.Clock();
 
-    //Valores posicion
+    //Valores posicion y avance
     this.vertical = new THREE.Vector3(0,1,0);
     this.frente = new THREE.Vector3(1,0,0);
     this.cantidadAvance = 12;
@@ -22,7 +22,7 @@ class Jugador extends THREE.Object3D {
     this.saltando = false;
     this.direccionAlmacenada = {a:0,l:0};
     
-    this.createCameraPrimeraPersona();
+    this.crearCameraPrimeraPersona();
 
     //Carga el modelo de la pistola
     var materialLoader = new MTLLoader();
@@ -40,7 +40,7 @@ class Jugador extends THREE.Object3D {
               this.pistola.scale.z=0.1;
 
               //Creo el efecto de disparo
-              this.efectoDisparo();
+              this.crearEfectoDisparo();
               this .add (this.pistola) ;
 
               this.pistola.position.x += 2; 
@@ -58,7 +58,7 @@ class Jugador extends THREE.Object3D {
       this.tiempoDisparo = 0;
   }
 
-  createCameraPrimeraPersona(){
+  crearCameraPrimeraPersona(){
 
     this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
     // También se indica dónde se coloca
@@ -69,6 +69,22 @@ class Jugador extends THREE.Object3D {
     this.add (this.camera);
   }
 
+  crearEfectoDisparo(){
+    var geometria = new THREE.BoxGeometry (10,10,0.1);
+    var textura = new THREE.TextureLoader().load('../imgs/disparo.png');
+    var material = new THREE.MeshBasicMaterial ({map: textura, transparent: true , opacity:0.6});
+    
+    // Ya se puede construir el Mesh
+    this.efectoD  = new THREE.Mesh (geometria, material);
+
+    this.efectoD.rotateX(Math.PI/2);
+    this.efectoD.rotateY(Math.PI/2);
+    this.efectoD.position.z += 13;
+    this.efectoD.position.x -= 11.5;
+    this.efectoD.position.y -=1;
+  }
+
+  //Para realizar el movimiento del jugador si no está saltando
   avanzar(adelante,derecha){
     if(!this.saltando){
       if(adelante && derecha){
@@ -86,6 +102,22 @@ class Jugador extends THREE.Object3D {
     }
   }
 
+  //Para aplicar el desplazamiento almacenado en el momento del salto
+  aplicarDesplazamientoAlmacenado(){
+    if(this.direccionAlmacenada.a && this.direccionAlmacenada.l){
+      var distancia = Math.sqrt(this.cantidadAvance*this.cantidadAvance);
+      this.translateOnAxis (this.frente, this.dt*(this.direccionAlmacenada.a*distancia/2));
+      this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(this.direccionAlmacenada.l*distancia/2));
+    }
+
+    else if(this.direccionAlmacenada.l)
+      this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(this.cantidadAvance*this.direccionAlmacenada.l));
+
+    else if(this.direccionAlmacenada.a)
+      this.translateOnAxis (this.frente, this.dt*(this.cantidadAvance*this.direccionAlmacenada.a));
+  }
+
+  //Para girar cámara con el ratón
   girarCamara(x,y){
     this.rotateOnAxis (this.vertical, -x/500);
 
@@ -136,19 +168,14 @@ class Jugador extends THREE.Object3D {
     this.disparando = true;
   }
 
-  efectoDisparo(){
-    var geometria = new THREE.BoxGeometry (10,10,0.1);
-    var textura = new THREE.TextureLoader().load('../imgs/disparo.png');
-    var material = new THREE.MeshBasicMaterial ({map: textura, transparent: true , opacity:0.6});
-    
-    // Ya se puede construir el Mesh
-    this.efectoD  = new THREE.Mesh (geometria, material);
+  aplicarEfectoDisparo(){
+    this.tiempoDisparo += this.dt;
 
-    this.efectoD.rotateX(Math.PI/2);
-    this.efectoD.rotateY(Math.PI/2);
-    this.efectoD.position.z += 13;
-    this.efectoD.position.x -= 11.5;
-    this.efectoD.position.y -=1;
+    if(this.tiempoDisparo>=0.1){
+      this.pistola.remove(this.efectoD);
+      this.tiempoDisparo = 0;
+      this.disparando = false;
+    }
   }
   
   update (pausa) {
@@ -156,29 +183,13 @@ class Jugador extends THREE.Object3D {
 
     if(!pausa){
       TWEEN.update();
-      //Si estoy saltando aplico el desplazamiento almacenado
+      //Si estoy saltando aplico el desplazamiento almacenado en el momento del salto
       if(this.saltando){
-        if(this.direccionAlmacenada.a && this.direccionAlmacenada.l){
-          var distancia = Math.sqrt(this.cantidadAvance*this.cantidadAvance);
-          this.translateOnAxis (this.frente, this.dt*(this.direccionAlmacenada.a*distancia/2));
-          this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(this.direccionAlmacenada.l*distancia/2));
-        }
-
-        else if(this.direccionAlmacenada.l)
-          this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(this.cantidadAvance*this.direccionAlmacenada.l));
-
-        else if(this.direccionAlmacenada.a)
-          this.translateOnAxis (this.frente, this.dt*(this.cantidadAvance*this.direccionAlmacenada.a));
+        this.aplicarDesplazamientoAlmacenado();
       }
 
       if(this.disparando){
-        this.tiempoDisparo += this.dt;
-
-        if(this.tiempoDisparo>=0.1){
-          this.pistola.remove(this.efectoD);
-          this.tiempoDisparo = 0;
-          this.disparando = false;
-        }
+        this.aplicarEfectoDisparo();
       }
     }
 
