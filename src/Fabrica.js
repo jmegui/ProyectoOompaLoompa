@@ -8,13 +8,14 @@ class Fabrica extends THREE.Object3D {
     var cartelFabrica = new THREE.BoxBufferGeometry(7,4,0.1);
     var cilin = new THREE.CylinderBufferGeometry(2,3,60,20,20,false);
     var portonGEO = new THREE.BoxBufferGeometry(7,7,0.1);
-    var tejadoGEO = new THREE.Buffer
+    var tejadoGEO = new THREE.ConeBufferGeometry(10,4,4,4);
 
     var loader = new THREE.TextureLoader();
     var textura = loader.load("./imgs/texturaFabrica.jpg");
     var texturaTorre = loader.load("./imgs/ladrillo-difuso.png");
     var texturaCartel = loader.load("./imgs/cartel.png")
     var texturaPorton = loader.load("./imgs/porton.jpg");
+    // var texturaTejado = loader.load("./imgs/texturaFabrica.jpg");
     // Como material se crea uno a partir de un color
     var boxMat = new THREE.MeshPhongMaterial({map: textura});
     var TorMat = new THREE.MeshPhongMaterial({map: texturaTorre});
@@ -29,6 +30,7 @@ class Fabrica extends THREE.Object3D {
     var cilindro3 = new THREE.Mesh(cilin,TorMat);
     var cartel = new THREE.Mesh(cartelFabrica,carMat);
     var porton = new THREE.Mesh(portonGEO,porMat);
+    var tejado = new THREE.Mesh(tejadoGEO,boxMat);
     // Y añadirlo como hijo del Object3D (el this)
     this.add (box);
     this.add (cilindro);
@@ -36,6 +38,10 @@ class Fabrica extends THREE.Object3D {
     this.add (cilindro3);
     this.add(cartel);
     this.add(porton);
+    this.add(tejado);
+
+    tejado.position.y = 14;
+    tejado.position.x = 20;
     
     cartel.rotateY(Math.PI/2);
     cartel.position.y = 10;
