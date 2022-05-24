@@ -129,9 +129,11 @@ class Robot extends THREE.Object3D {
 
   enemigoEspecial(){
     var aleatorio = Math.random();
+    this.daño = 4;
     
     //Si el aleatorio es menor de 0.1 creo un gigante, mas lento pero con mas vida
     if(aleatorio<0.1){
+      this.daño = 8;
       this.scale.set(2,2,2);
       this.velocidad = 1;
       this.vida = 300;
@@ -139,6 +141,7 @@ class Robot extends THREE.Object3D {
     }
     //Si el aleatorio es menor de 0.2 creo un enano, mas rapido pero con menos vida
     else if(aleatorio<0.2){
+      this.daño = 2;
       this.scale.set(0.5,0.5,0.5);
       this.velocidad = 5;
       this.vida = 30;
@@ -235,19 +238,21 @@ class Robot extends THREE.Object3D {
   }
 
   recibeDisparo(){
-    this.vida -=35;
+    if(this.vida>0){
+      this.vida -=35;
 
-    if(this.vida<=0){
-      this.vida = 0;
-      this.barraVida.geometry.dispose();
-      this.barraVida.material.dispose();
-      this.cantidadVida.geometry.dispose();
-      this.cantidadVida.material.dispose();
-      this.eliminarGeometria(this.model);
-      this.fadeToAction('Death',false,1);
+      if(this.vida<=0){
+        this.vida = 0;
+        this.barraVida.geometry.dispose();
+        this.barraVida.material.dispose();
+        this.cantidadVida.geometry.dispose();
+        this.cantidadVida.material.dispose();
+        this.eliminarGeometria(this.model);
+        this.fadeToAction('Death',false,1);
+      }
+  
+      this.actualizarVida();
     }
-
-    this.actualizarVida();
   }
   
   update (pausa, jugador) {

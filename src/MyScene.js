@@ -271,9 +271,9 @@ this.background = textureCube ;
       //Si el robot esta golpeando se actualiza la vida del jugador o de la fabrica
       if(this.umpalumpas[i].puñetazo==0 && !this.pausa){
         if(this.umpalumpas[i].objetivo[0]=='fabrica' && this.fabrica.vida>0)
-          this.fabrica.vida-=4;
+          this.fabrica.vida-=this.umpalumpas[i].daño;
         else if(this.jugador.vida>0)
-          this.jugador.vida-=4;
+          this.jugador.vida-=this.umpalumpas[i].daño;
       }
 
       //Si hace 0.5 segundos que ha muerto se elimina y se añade nuevo enemigo
