@@ -12,6 +12,8 @@ import {Robot} from './Robot.js'
 import { Jugador } from './Jugador.js'
 
 import {Fabrica} from './Fabrica.js'
+
+import {Corazon} from './Corazon.js'
  
 /// La clase fachada del modelo
 /**
@@ -79,6 +81,10 @@ class MyScene extends THREE.Scene {
     this.fabrica = new Fabrica();
 
     this.add(this.fabrica);
+
+    this.corazon = new Corazon();
+
+    this.add(this.corazon);
 
     //Creo una variable para almacenar el tiempo de duración de la partida
     this.tiempo = 0;
@@ -339,6 +345,8 @@ this.background = textureCube ;
 
     //Actualizo a todos los enemigos
     this.actualizarEnemigos();
+
+    this.corazon.update();
   
     //Se comprueba si se ha acabado la partida
     this.comprobarFinalPartida();
