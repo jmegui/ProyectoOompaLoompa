@@ -1,4 +1,5 @@
 import * as THREE from '../libs/three.module.js'
+import { CSG } from '../libs/CSG-v2.js'
  
 class Fabrica extends THREE.Object3D {
   constructor() {
@@ -9,7 +10,14 @@ class Fabrica extends THREE.Object3D {
     var cilin = new THREE.CylinderBufferGeometry(2,3,60,20,20,false);
     var portonGEO = new THREE.BoxBufferGeometry(7,7,0.1);
 
-    var tejadoGEO = new THREE.BufferGeometry();
+    var tejadoGEO = new THREE.BoxBufferGeometry(20,5,20);
+
+
+    var cajaresta = new THREE.BoxBufferGeometry (30,20,20);
+
+    cajaresta.rotateZ(Math.PI/20);
+    cajaresta.translate(0,10,0);
+
 
     var loader = new THREE.TextureLoader();
     var textura = loader.load("./imgs/texturaFabrica.jpg");
@@ -31,7 +39,17 @@ class Fabrica extends THREE.Object3D {
     var cilindro3 = new THREE.Mesh(cilin,TorMat);
     var cartel = new THREE.Mesh(cartelFabrica,carMat);
     var porton = new THREE.Mesh(portonGEO,porMat);
-    // var tejado = new THREE.Mesh(tejadoGEO,boxMat);
+
+
+    var tejado = new THREE.Mesh(tejadoGEO,boxMat);
+    var cajares = new THREE.Mesh(cajaresta,boxMat)
+
+    var csg = new CSG();
+    csg.subtract ( [ tejado ,  cajares ] ) ;
+
+    tejado = csg.toMesh();
+
+
     // Y añadirlo como hijo del Object3D (el this)
     this.add (box);
     this.add (cilindro);
@@ -39,9 +57,11 @@ class Fabrica extends THREE.Object3D {
     this.add (cilindro3);
     this.add(cartel);
     this.add(porton);
-    // this.add(tejado);
+    this.add(tejado);
 
-    // tejado.position.y = 2;
+    tejado.rotateY(Math.PI/2)
+    tejado.position.y = 15;
+    tejado.position.x = 1;
     // tejado.position.x = 20;
     
     cartel.rotateY(Math.PI/2);
