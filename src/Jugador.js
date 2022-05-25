@@ -25,7 +25,17 @@ class Jugador extends THREE.Object3D {
     
     this.crearCameraPrimeraPersona();
 
+    var spotLight = new THREE.SpotLight (0xffffff, 0.7);
+    spotLight.position.set(0,2,0);
 
+    var target = new THREE.Object3D();
+    target.position.set(0,2,8);
+
+    spotLight.target = target;
+
+    this.add(target);
+
+    this.add(spotLight)
 
     //Carga el modelo de la pistola
     var materialLoader = new MTLLoader();
