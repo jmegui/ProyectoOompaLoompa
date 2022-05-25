@@ -39,7 +39,7 @@ class MyScene extends THREE.Scene {
     this.renderer = this.createRenderer(myCanvas);
     
     // Se añade a la gui los controles para manipular los elementos de esta clase
-    this.gui = this.createGUI ();
+    // this.gui = this.createGUI ();
     
     this.initStats();
 
@@ -107,6 +107,8 @@ class MyScene extends THREE.Scene {
     this.torretaEnConstruccion = null;
     this.torretas = [];
     //this.add(this.torretas[0]);
+
+    this.noche = false;
   }
   
   initStats() {
@@ -159,41 +161,41 @@ this.background = textureCube ;
     this.add (this.ground);
   }
   
-  createGUI () {
-    // Se crea la interfaz gráfica de usuario
-    var gui = new GUI();
+  // createGUI () {
+  //   // Se crea la interfaz gráfica de usuario
+  //   var gui = new GUI();
     
-    // La escena le va a añadir sus propios controles. 
-    // Se definen mediante un objeto de control
-    // En este caso la intensidad de la luz y si se muestran o no los ejes
-    this.guiControls = {
-      // En el contexto de una función   this   alude a la función
-      lightIntensity : 0.5,
-      axisOnOff : true
-    }
+  //   // La escena le va a añadir sus propios controles. 
+  //   // Se definen mediante un objeto de control
+  //   // En este caso la intensidad de la luz y si se muestran o no los ejes
+  //   this.guiControls = {
+  //     // En el contexto de una función   this   alude a la función
+  //     lightIntensity : 0.5,
+  //     axisOnOff : true
+  //   }
 
-    // Se crea una sección para los controles de esta clase
-    var folder = gui.addFolder ('Luz y Ejes');
+  //   // Se crea una sección para los controles de esta clase
+  //   var folder = gui.addFolder ('Luz y Ejes');
     
-    // Se le añade un control para la intensidad de la luz
-    folder.add (this.guiControls, 'lightIntensity', 0, 1, 0.1)
-      .name('Intensidad de la Luz : ')
-      .onChange ( (value) => this.setLightIntensity (value) );
+  //   // Se le añade un control para la intensidad de la luz
+  //   folder.add (this.guiControls, 'lightIntensity', 0, 1, 0.1)
+  //     .name('Intensidad de la Luz : ')
+  //     .onChange ( (value) => this.setLightIntensity (value) );
     
-    // Y otro para mostrar u ocultar los ejes
-    folder.add (this.guiControls, 'axisOnOff')
-      .name ('Mostrar ejes : ')
-      .onChange ( (value) => this.setAxisVisible (value) );
+  //   // Y otro para mostrar u ocultar los ejes
+  //   folder.add (this.guiControls, 'axisOnOff')
+  //     .name ('Mostrar ejes : ')
+  //     .onChange ( (value) => this.setAxisVisible (value) );
     
-    return gui;
-  }
+  //   return gui;
+  // }
   
   createLights () {
     // Se crea una luz ambiental, evita que se vean complentamente negras las zonas donde no incide de manera directa una fuente de luz
     // La luz ambiental solo tiene un color y una intensidad
     // Se declara como   var   y va a ser una variable local a este método
     //    se hace así puesto que no va a ser accedida desde otros métodos
-    var ambientLight = new THREE.AmbientLight(0xccddee, 0.35);
+    var ambientLight = new THREE.AmbientLight(0xccddee, 0.10);
     // La añadimos a la escena
     this.add (ambientLight);
     
@@ -201,9 +203,10 @@ this.background = textureCube ;
     // La luz focal, además tiene una posición, y un punto de mira
     // Si no se le da punto de mira, apuntará al (0,0,0) en coordenadas del mundo
     // En este caso se declara como   this.atributo   para que sea un atributo accesible desde otros métodos.
-    this.spotLight = new THREE.SpotLight( 0xffffff, this.guiControls.lightIntensity );
-    this.spotLight.position.set( 60, 60, 40 );
+    this.spotLight = new THREE.SpotLight( 0xffffff);
+    this.spotLight.position.set( -60, 70, 0 );
     this.add (this.spotLight);
+    this.setLightIntensity(1);
   }
   
   setLightIntensity (valor) {
@@ -353,6 +356,11 @@ this.background = textureCube ;
         this.modoConstruirTorreta = true;
       }
     }
+
+    if(this.map[70])
+    {
+      this.jugador.alternarLinterna();
+    }
   }
 
   //Comprobar final partida
@@ -481,6 +489,29 @@ this.background = textureCube ;
     }
   }
 
+  actualizarDiaNoche()
+  {
+
+    if(!this.noche) // si es de día
+    {
+      this.setLightIntensity(this.spotLight.intensity - 0.1 * this.clock.getDelta());
+
+      if(this.spotLight.intensity <= 0)
+      {
+        this.noche = true;
+      }
+    }
+    else
+    {
+      this.setLightIntensity(this.spotLight.intensity + 0.2 * this.clock.getDelta());
+
+      if(this.spotLight.intensity >= 1)
+      {
+        this.noche = false;
+      }
+    }
+  }
+
   update () {
     //Comprobamos si se encuentra en pausa
     this.comprobarPausa();
@@ -501,6 +532,9 @@ this.background = textureCube ;
 
     //Se ejecuta el movimiento
     this.aplicarControles();
+
+    //Se actualiza el ciclo día noche (aumenta y disminuye la intensidad de la luz focal de la escena)
+    this.actualizarDiaNoche();
 
     //Compruebo si hay que crear un consumible y en caso afirmativo lo creo
     if(this.tiempoConsumible>=15)
@@ -540,8 +574,8 @@ $(function () {
   // Se añaden los listener de la aplicación. En este caso, el que va a comprobar cuándo se modifica el tamaño de la ventana de la aplicación.
   window.addEventListener ("resize", () => scene.onWindowResize());
 
-  //Gestionar el movimiento con las teclas (izquierda, arriba, derecha, abajo) (w,a,s,d) (espacio) (shift)
-  var map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false, 32:false, 16:false, 84:false};
+  //Gestionar el movimiento con las teclas (izquierda, arriba, derecha, abajo) (w,a,s,d) (espacio) (shift) (t) (f)
+  var map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false, 32:false, 16:false, 84:false, 70:false};
 
   //Eventos de pulsacion de teclas
   window.addEventListener("keydown", function (e) {

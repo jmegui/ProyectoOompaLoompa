@@ -25,17 +25,26 @@ class Jugador extends THREE.Object3D {
     
     this.crearCameraPrimeraPersona();
 
-    var spotLight = new THREE.SpotLight (0xffffff, 0.7);
-    spotLight.position.set(0,2,0);
+    this.spotLight = new THREE.SpotLight (0xffffff, 0 ,50,Math.PI/3,0.7);
+    this.spotLight.position.set(8,4,0);
 
-    var target = new THREE.Object3D();
-    target.position.set(0,2,8);
+    // var geo = new THREE.BoxBufferGeometry(1,1,1);
+    // var mat = new THREE.MeshToonMaterial({color: 0xCF0000});
 
-    spotLight.target = target;
+    // this.target = new THREE.Mesh(geo,mat);
 
-    this.add(target);
+    this.target = new THREE.Object3D();
 
-    this.add(spotLight)
+    this.target.position.set(20,4,0);
+
+    this.linternaEncendida = false;
+
+    this.spotLight.target = this.target;
+
+
+    this.add(this.target);
+
+    this.add(this.spotLight)
 
     //Carga el modelo de la pistola
     var materialLoader = new MTLLoader();
@@ -99,6 +108,20 @@ class Jugador extends THREE.Object3D {
     this.efectoD.position.y -=1;
   }
 
+  alternarLinterna()
+  {
+    if(this.linternaEncendida)
+    {
+      this.spotLight.intensity = 0.0;
+      this.linternaEncendida = false;
+    }
+    else
+    {
+      this.spotLight.intensity = 0.7;
+      this.linternaEncendida = true;
+    }
+  }
+
   //Para realizar el movimiento del jugador si no está saltando
   avanzar(adelante,derecha){
     if(!this.saltando){
@@ -138,12 +161,14 @@ class Jugador extends THREE.Object3D {
     if(this.pistola){
       this.rotateOnAxis (this.vertical, -x/500);
 
+      
       //Limita el giro de la cabeza hacia arriba y abajo
       if((y<0 && this.inclinacion>(-90*Math.PI/180)) || (y>0 && this.inclinacion<(90*Math.PI/180))){
         this.inclinacion += y/500;
         this.camera.rotateOnAxis(this.frente,-y/500);
         this.pistola.rotateOnAxis(new THREE.Vector3(0,1,0),-y/500);
       }
+
     }
   }
 
