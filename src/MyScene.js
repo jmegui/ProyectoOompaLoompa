@@ -413,10 +413,12 @@ this.background = textureCube ;
   //   this.jugador.instanciarProyectil();
   // }
 
-  instanciarProyectil(destino,robot)
+  instanciarProyectil(origen,destino,robot)
   {
-    this.proyectiles.push(new Proyectil(this.jugador,destino,robot));
-    this.add(this.proyectiles[this.proyectiles.length-1]);
+      
+      this.proyectiles.push(new Proyectil(origen,destino,robot));
+      this.add(this.proyectiles[this.proyectiles.length-1]);
+
   }
 
   actualizarProyectiles()
@@ -425,7 +427,7 @@ this.background = textureCube ;
     {
       this.proyectiles[i].update();
 
-      if(this.proyectiles[i].distanciaRecorrida > 40.0 || this.proyectiles[i].distanciaRecorrida >= this.proyectiles[i].distanciaTotal - 5)
+      if(this.proyectiles[i].distanciaRecorrida > 60.0 || this.proyectiles[i].intersecta())
       {
         this.proyectiles[i].quitarVidaAlRobot();
         this.proyectiles[i].objeto.geometry.dispose();
@@ -466,6 +468,7 @@ this.background = textureCube ;
       this.comprobarColisionConsumible();
     }
 
+    if(!this.pausa)
     this.actualizarProyectiles();
 
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
@@ -531,7 +534,7 @@ $(function () {
 
   //Deteccion disparo
   window.addEventListener("click", function(event){
-    if(document.pointerLockElement==document.body){
+    if(document.pointerLockElement==document.body && !scene.pausa){
       //Se inicia el efectoDisparo
       scene.jugador.disparo();
 
@@ -548,6 +551,7 @@ $(function () {
       // y que pasa por la posición donde se ha hecho clic
       var raycaster = new THREE.Raycaster ();
       raycaster.setFromCamera(mouse, scene.camera) ;
+
 
       // Hay que buscar qué objetos intersecan con el rayo
       //Es una operación costosa , solo se buscan intersecciones 
@@ -566,9 +570,13 @@ $(function () {
       if (pickedObjects.length > 0) {
         // Se puede referenciar el Mesh clicado
         var selectedObject = pickedObjects[0].object;
-        scene.instanciarProyectil(selectedObject.userData.position,selectedObject.userData);
+        scene.instanciarProyectil(raycaster.ray.origin,raycaster.ray.direction,selectedObject.userData);
         // selectedObject.userData.recibeDisparo();
       } 
+      else
+      {
+        scene.instanciarProyectil(raycaster.ray.origin,raycaster.ray.direction,null);
+      }
     }
   });
 

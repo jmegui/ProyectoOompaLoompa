@@ -4,7 +4,7 @@ class Proyectil extends THREE.Object3D {
   constructor(origen,obj,robot) {
     super();
 
-    this.origen = new THREE.Vector3(origen.position.x,origen.position.y,origen.position.z);
+    this.origen = new THREE.Vector3(origen.x,origen.y,origen.z);
     
     this.clock = new THREE.Clock();
 
@@ -16,24 +16,29 @@ class Proyectil extends THREE.Object3D {
     // Ya podemos construir el Mesh
     this.objeto = new THREE.Mesh (BarridoGeom, BarridoMat);
 
-    this.objetivo = obj
+    // this.objetivo = obj
 
-    this.robot = robot;
+
+    this.objetivo = new THREE.Vector3(obj.x * 10000, obj.y * 10000  , obj.z * 10000)
+
+    if(robot !=null)
+    {
+      this.robot = robot;
+    }
+
 
     this.efecto = false;
 
     this.add (this.objeto);
 
-
+    this.distanciaTotal = this.getDistancia(this.position,this.objetivo)
 
 
     this.distanciaRecorrida = 0;
 
-    this.distanciaTotal = this.getDistancia(origen.position,this.objetivo)
-
-    this.position.x = origen.position.x
-    this.position.z = origen.position.z;
-    this.position.y = origen.position.y + 2;
+    this.position.x = origen.x
+    this.position.z = origen.z;
+    this.position.y = origen.y ;
 
     this.lookAt(this.objetivo);
 
@@ -45,13 +50,16 @@ class Proyectil extends THREE.Object3D {
       return Math.sqrt(Math.pow(inicio.x - fin.x, 2) + Math.pow(inicio.z - fin.z, 2));
   }
   
-  intersecta(robot){
-    return (this.getDistancia(this.position,robot.position)<2);
+  intersecta(){
+    if(this.robot!=null)
+    return (this.getDistancia(this.position,this.robot.position)<3);
+    else
+    false;
   }
 
   quitarVidaAlRobot()
   {
-    if(!this.efecto)
+    if(!this.efecto && this.robot!= null)
     {
       this.robot.recibeDisparo();
       this.efecto = true;
@@ -109,8 +117,7 @@ class Proyectil extends THREE.Object3D {
     // Y por último la traslación
 
 
-      this.aproximar(30 * this.clock.getDelta());
-
+      this.aproximar(40 * this.clock.getDelta());
 
       this.distanciaRecorrida = this.getDistancia(this.origen,this.position);
 
