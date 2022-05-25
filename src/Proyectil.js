@@ -1,7 +1,7 @@
 import * as THREE from '../libs/three.module.js'
  
 class Proyectil extends THREE.Object3D {
-  constructor(origen,obj,robot) {
+  constructor(origen,obj,robots) {
     super();
 
     this.origen = new THREE.Vector3(origen.x,origen.y,origen.z);
@@ -12,22 +12,14 @@ class Proyectil extends THREE.Object3D {
 
     var BarridoGeom = new THREE.TorusBufferGeometry(0.8,0.2,10,50);
     // Como material se crea uno a partir de un color
-    var BarridoMat = new THREE.MeshToonMaterial({color: 0xCF0000});
+    var BarridoMat = new THREE.MeshToonMaterial({color: 0xCF0000, transparent:true, opacity:0.8});
     // Ya podemos construir el Mesh
     this.objeto = new THREE.Mesh (BarridoGeom, BarridoMat);
-
-    // this.objetivo = obj
 
 
     this.objetivo = new THREE.Vector3(obj.x * 1000000, obj.y * 1000000  , obj.z * 1000000)
 
-    if(robot !=null)
-    {
-      this.robot = robot;
-    }
-
-
-    this.efecto = false;
+    this.robots = robots;
 
     this.add (this.objeto);
 
@@ -36,35 +28,34 @@ class Proyectil extends THREE.Object3D {
 
     this.distanciaRecorrida = 0;
 
-    this.position.x = origen.x
-    this.position.z = origen.z;
-    this.position.y = origen.y ;
+    this.position.x = this.origen.x
+    this.position.z = this.origen.z;
+    this.position.y = this.origen.y ;
 
     this.lookAt(this.objetivo);
 
+    //Almaceno los robots alcanzados
+    this.alcanzados = new Array(this.robots.length);
 
   }
 
   getDistancia(inicio,fin)
   {
-      return Math.sqrt(Math.pow(inicio.x - fin.x, 2) + Math.pow(inicio.z - fin.z, 2));
+      return Math.sqrt(Math.pow(inicio.x - fin.x, 2) + Math.pow(inicio.z - fin.z, 2) +  Math.pow(inicio.y - fin.y, 2));
   }
   
   intersecta(){
-    if(this.robot!=null)
-    return (this.getDistancia(this.position,this.robot.position)<3);
-    else
-    false;
+    for(var i=0; i<this.robots.length; i++){
+      if(this.getDistancia(this.position,this.robots[i].position)<3 && !this.alcanzados[i]){
+        this.quitarVidaAlRobot(i);
+        this.alcanzados[i] = true;
+      }
+    }
   }
 
-  quitarVidaAlRobot()
+  quitarVidaAlRobot(n)
   {
-    if(!this.efecto && this.robot!= null)
-    {
-      this.robot.recibeDisparo();
-      this.efecto = true;
-    }
-
+    this.robots[n].recibeDisparo();
   }
 
   aproximar(velocidad)
@@ -106,6 +97,9 @@ class Proyectil extends THREE.Object3D {
         this.position.z -= velocidad;
         this.position.x = (((this.objetivo.x - this.position.x)/(this.objetivo.z - z)) * (this.position.z - z) + this.position.x); }
     }
+
+    //Calcula altura
+    this.position.y = this.origen.y + this.objetivo.y * this.getDistancia(this.origen,this.position)/this.distanciaTotal;
   }
   
   update () {
