@@ -46,7 +46,7 @@ class Robot extends THREE.Object3D {
 
     //Genero su posición de manera aleatoria con respecto al centro
     this.rotateY(Math.random()*2*Math.PI);
-    this.translateOnAxis(new THREE.Vector3(0,0,-1),75);
+    this.translateOnAxis(new THREE.Vector3(0,0,-1),100);
 
     //Aplicar aleatoriedad para:
     //  -Robot mas grande, con mas vida y mas lento
