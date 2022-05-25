@@ -200,7 +200,7 @@ class Jugador extends THREE.Object3D {
       this.proyectiles[i].update();
     }
   }
-  
+
   update (pausa) {
     this.dt = this.clock.getDelta();
 
@@ -216,7 +216,6 @@ class Jugador extends THREE.Object3D {
       }
 
       this.actualizarProyectiles();
-
     }
 
   }
