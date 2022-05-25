@@ -19,7 +19,6 @@ import {Reparacion} from './Reparacion.js'
 
 import {Calaveras} from './Calaveras.js'
 
-
 import {Proyectil} from './Proyectil.js'
 
 
@@ -408,11 +407,6 @@ this.background = textureCube ;
     }
   }
 
-  // instanciarProyectil()
-  // {
-  //   this.jugador.instanciarProyectil();
-  // }
-
   instanciarProyectil(origen,destino,robot)
   {
       
@@ -426,12 +420,14 @@ this.background = textureCube ;
     for(var i = 0; i < this.proyectiles.length;i++)
     {
       this.proyectiles[i].update();
+      
+      this.proyectiles[i].intersecta();
 
-      if(this.proyectiles[i].distanciaRecorrida > 60.0 || this.proyectiles[i].intersecta())
+      if(this.proyectiles[i].distanciaRecorrida > 70.0 || this.proyectiles[i].position.y<-2)
       {
-        this.proyectiles[i].quitarVidaAlRobot();
         this.proyectiles[i].objeto.geometry.dispose();
         this.remove(this.proyectiles[i]);
+        this.proyectiles.splice(i,1);
       }
     }
   }
@@ -468,8 +464,9 @@ this.background = textureCube ;
       this.comprobarColisionConsumible();
     }
 
+    //Actualiza los proyectiles
     if(!this.pausa)
-    this.actualizarProyectiles();
+      this.actualizarProyectiles();
 
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render (this, this.getCamera());
@@ -552,31 +549,7 @@ $(function () {
       var raycaster = new THREE.Raycaster ();
       raycaster.setFromCamera(mouse, scene.camera) ;
 
-
-      // Hay que buscar qué objetos intersecan con el rayo
-      //Es una operación costosa , solo se buscan intersecciones 
-      // con los objetos que interesan en cada momento
-      // Las referencias de dichos objetos se guardan en un array
-      var pickableObjects = [scene.umpalumpas[0].colision];
-
-      for(var i = 1; i<scene.umpalumpas.length; i++){
-        pickableObjects.push(scene.umpalumpas[i].colision);
-      }
-
-      //Los objetos alcanzados por el rayo , entre los seleccionables , se devuelven en otro array
-      var pickedObjects = raycaster.intersectObjects ( pickableObjects , true ) ;
-
-      // pickedObjects es un vector ordenado desde el objeto más cercano
-      if (pickedObjects.length > 0) {
-        // Se puede referenciar el Mesh clicado
-        var selectedObject = pickedObjects[0].object;
-        scene.instanciarProyectil(raycaster.ray.origin,raycaster.ray.direction,selectedObject.userData);
-        // selectedObject.userData.recibeDisparo();
-      } 
-      else
-      {
-        scene.instanciarProyectil(raycaster.ray.origin,raycaster.ray.direction,null);
-      }
+      scene.instanciarProyectil(raycaster.ray.origin,raycaster.ray.direction,scene.umpalumpas);
     }
   });
 

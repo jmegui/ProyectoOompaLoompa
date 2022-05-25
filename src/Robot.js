@@ -17,6 +17,7 @@ class Robot extends THREE.Object3D {
       // Y las animaciones en el atributo  animations
       var animations = gltf.animations;
       // No olvidarse de colgar el modelo del Object3D de esta instancia de la clase (this)
+      this.model.position.y -= 2;
       this.add( this.model );
 
       this.createActions(this.model,animations);
@@ -24,6 +25,8 @@ class Robot extends THREE.Object3D {
       // Se crea la interfaz de usuario que nos permite ver las animaciones que tiene el modelo y qué realizan
     }, undefined, ( e ) => { console.error( e ); }
     );
+
+    this.position.y += 2;
 
     //Fijamos el objetivo
     this.objetivo = ['fabrica',new Vector3(0,0,0)];
