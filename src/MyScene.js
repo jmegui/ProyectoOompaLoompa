@@ -14,6 +14,12 @@ import { Jugador } from './Jugador.js'
 import {Fabrica} from './Fabrica.js'
 
 import {Corazon} from './Corazon.js'
+
+import {Reparacion} from './Reparacion.js'
+
+import {Calaveras} from './Calaveras.js'
+
+
  
 /// La clase fachada del modelo
 /**
@@ -89,6 +95,9 @@ class MyScene extends THREE.Scene {
     //Añado variable consumible y un contador para la aparición de consumibles cada 15s
     this.consumible = null;
     this.tiempoConsumible = 0;
+
+    this.muertesTotales = 0;
+    document.getElementById("muertes").textContent = this.muertesTotales;
   }
   
   initStats() {
@@ -281,6 +290,8 @@ this.background = textureCube ;
       //Si hace 0.5 segundos que ha muerto se elimina y se añade nuevo enemigo
       if(this.umpalumpas[i].tiempoMuerto>0.5){
         this.remove(this.umpalumpas[i]);
+        this.muertesTotales ++;
+        document.getElementById("muertes").textContent = this.muertesTotales;
         this.umpalumpas.splice(i,1);
         //Si hay menos de 5 enemigos añado uno
         if(this.umpalumpas.length<6 || this.tempEnemigos>=2){
@@ -332,6 +343,7 @@ this.background = textureCube ;
       this.finPartida = true;
       document.exitPointerLock();
       document.getElementById("tiempoFinal").textContent = Math.round(this.tiempo);
+      document.getElementById("muertesFinales").textContent = this.muertesTotales;
       document.getElementById("letreroFinPartida").style.display="block";
     }
   }
@@ -389,6 +401,12 @@ this.background = textureCube ;
       this.tiempoConsumible=0;
     }
   }
+
+  instanciarProyectil()
+  {
+    this.jugador.instanciarProyectil();
+  }
+
 
   update () {
     //Comprobamos si se encuentra en pausa
@@ -494,6 +512,8 @@ $(function () {
       var mouse = new THREE.Vector2 ();
       mouse.x = 0; 
       mouse.y = 0;
+
+      scene.instanciarProyectil();
 
       //Se construye un rayo que parte de la cámara ( el ojo del 
       // y que pasa por la posición donde se ha hecho clic

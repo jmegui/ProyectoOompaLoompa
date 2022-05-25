@@ -20,7 +20,21 @@
             display: inline-block;
             position: fixed;
             top: 1%;
-            left: 1%;
+            left: 1%; 
+            background-color: rgba(255, 255, 255, 0.758);
+            font-size: 200%;
+            border-radius: 10px;
+            border-style: solid;
+            text-align: center;
+        }
+
+        .muertes{
+            width: 12%;
+            height: 10%;
+            display: inline-block;
+            position: fixed;
+            top: 1%;
+            left: 12%; 
             background-color: rgba(255, 255, 255, 0.758);
             font-size: 200%;
             border-radius: 10px;
@@ -136,10 +150,18 @@
             text-align: center;
             color: white;
         }
+
+        .datos{
+            display:flex;
+            flex-direction: row;
+        }
     </style>
 </head>
 <body>
+    <div class="datos">
     <div class="tiempo"><span class="tituloTiempo">&nbsp;Tiempo:</span><br><span id="tiempoPartida"></span></div>
+    <div class="muertes"><span class="tituloTiempo">&nbsp;Muertes:</span><br><span id="muertes"></span></div>
+    </div>
     <img src="imgs/mira.png" id="mira">
     <div id="barraVidaFabrica"><div id="vidaFabrica"><span id="porcentajeVidaF"></span></div></div>
     <div id="barraVidaJugador"><div id="vidaJugador"><span id="porcentajeVidaJ"></span></div></div>
@@ -151,6 +173,7 @@
     <div id = "letreroFinPartida">
         <p>FIN DE LA PARTIDA</p>
         <p>Tiempo alcanzado: <span id="tiempoFinal"></span> s</p>
+        <p>Has matado a <span id="muertesFinales"></span> umpalumpas</p>
         <p>Click aqui para reiniciar</p>
     </div>
     <div id = "letreroInicio">

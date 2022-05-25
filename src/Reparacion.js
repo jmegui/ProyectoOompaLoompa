@@ -26,7 +26,7 @@ class Reparacion extends THREE.Object3D {
     this.objeto = this;
 
     //Genero su posición de manera aleatoria con respecto al centro
-    var distanciaAleatoria = Math.random()*(100-10)+10;
+    var distanciaAleatoria = Math.random()*(100-10)+20;
     this.rotateY(Math.random()*2*Math.PI);
     this.translateOnAxis(new THREE.Vector3(0,0,-1),distanciaAleatoria);
     this.position.y = 3;

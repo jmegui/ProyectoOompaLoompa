@@ -3,6 +3,8 @@ import { TrackballControls } from '../libs/TrackballControls.js'
 import * as TWEEN from '../libs/tween.esm.js'
 import { MTLLoader } from '../libs/MTLLoader.js'
 import { OBJLoader } from '../libs/OBJLoader.js' 
+
+import {Proyectil} from './Proyectil.js'
  
 class Jugador extends THREE.Object3D {
   constructor(gui,titleGui) {
@@ -23,6 +25,8 @@ class Jugador extends THREE.Object3D {
     this.direccionAlmacenada = {a:0,l:0};
     
     this.crearCameraPrimeraPersona();
+
+    this.proyectiles = [];
 
     //Carga el modelo de la pistola
     var materialLoader = new MTLLoader();
@@ -182,6 +186,20 @@ class Jugador extends THREE.Object3D {
       this.disparando = false;
     }
   }
+
+  instanciarProyectil()
+  {
+    this.proyectiles.push(new Proyectil(this.jugador));
+    this.add(this.proyectiles[this.proyectiles.length-1]);
+  }
+
+  actualizarProyectiles()
+  {
+    for(var i = 0; i < this.proyectiles.length;i++)
+    {
+      this.proyectiles[i].update();
+    }
+  }
   
   update (pausa) {
     this.dt = this.clock.getDelta();
@@ -196,6 +214,9 @@ class Jugador extends THREE.Object3D {
       if(this.disparando){
         this.aplicarEfectoDisparo();
       }
+
+      this.actualizarProyectiles();
+
     }
 
   }

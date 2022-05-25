@@ -232,9 +232,16 @@ class Robot extends THREE.Object3D {
   }
 
   actualizarVida(){
+
     this.cantidadVida.position.x = 1.55;
     this.cantidadVida.scale.set(this.vida/this.vidaMax,1,1);
     this.cantidadVida.position.x = -1.55+1.55*this.vida/this.vidaMax;
+  }
+
+
+  eliminacionInstantanea()
+  {
+    this.vida -= this.vida + 1;
   }
 
   recibeDisparo(){
@@ -269,11 +276,11 @@ class Robot extends THREE.Object3D {
           var distanciaMinima = 0;
 
           //Elijo el objetivo
-          if(distanciaConJugador > 20 || distanciaConFabrica<11){
+          if(distanciaConJugador > 20 || distanciaConFabrica<20){
             //Si la distancia con el jugador es grande su objetivo es la fabrica
             this.objetivo = ['fabrica',new Vector3(0,0,0)];
             var distanciaConObjetivo = this.getDistancia(this.position,this.objetivo[1]);
-            distanciaMinima = 10;
+            distanciaMinima = 17;
           }
           else{
             //Si la distancia con el jugador es pequeña su objetivo es el jugador
@@ -312,6 +319,7 @@ class Robot extends THREE.Object3D {
           this.lookAt(this.objetivo[1]);
         }
         else{
+          
           this.tiempoMuerto+=dt;
         }
         this.mixer.update (dt)
