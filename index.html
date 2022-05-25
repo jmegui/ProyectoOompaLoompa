@@ -14,7 +14,7 @@
             font: 100% sans-serif;
         }
 
-        .tiempo{
+        .tiempo, .muertes, .dinero, #torreta{
             width: 10%;
             height: 10%;
             display: inline-block;
@@ -30,16 +30,23 @@
 
         .muertes{
             width: 12%;
-            height: 10%;
-            display: inline-block;
-            position: fixed;
-            top: 1%;
             left: 12%; 
-            background-color: rgba(255, 255, 255, 0.758);
-            font-size: 200%;
-            border-radius: 10px;
-            border-style: solid;
-            text-align: center;
+        }
+
+        .dinero{
+            width: 12%;
+            left: 26%; 
+        }
+
+        #dinero{
+            color: green;
+        }
+
+        #torreta{
+            width: 40%;
+            height: 3.5%;
+            left: 40%; 
+            font-size: 150%;
         }
 
         .tituloTiempo{
@@ -87,7 +94,8 @@
             width: 60%;
             height: 90%;
             top: 5%;
-            left: 20%
+            left: 20%;
+            display: none;
         }
 
         .instrucciones{
@@ -160,7 +168,9 @@
 <body>
     <div class="datos">
     <div class="tiempo"><span class="tituloTiempo">&nbsp;Tiempo:</span><br><span id="tiempoPartida"></span></div>
-    <div class="muertes"><span class="tituloTiempo">&nbsp;Muertes:</span><br><span id="muertes"></span></div>
+    <div class="muertes"><span class="tituloTiempo">&nbsp;Muertes:</span><br><span id="muertes">0</span></div>
+    <div class="dinero"><span class="tituloTiempo">&nbsp;Dinero:</span><br><span id="dinero">0 $</span></div>
+    <span id="torreta">Para construir una torreta por 200$ pulsa T</span>
     </div>
     <img src="imgs/mira.png" id="mira">
     <div id="barraVidaFabrica"><div id="vidaFabrica"><span id="porcentajeVidaF"></span></div></div>

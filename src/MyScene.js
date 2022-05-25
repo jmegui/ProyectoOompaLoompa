@@ -21,7 +21,7 @@ import {Calaveras} from './Calaveras.js'
 
 import {Proyectil} from './Proyectil.js'
 
-
+import {Torreta} from './Torreta.js'
  
 /// La clase fachada del modelo
 /**
@@ -75,8 +75,8 @@ class MyScene extends THREE.Scene {
 
     this.add (this.jugador);
 
-    //Para la pulsacion de teclas (izquierda, arriba, derecha, abajo) (w,a,s,d)
-    this.map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false, 32:false, 16: false};
+    //Para la pulsacion de teclas (izquierda, arriba, derecha, abajo) (w,a,s,d) (construir torreta)
+    this.map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false, 32:false, 16: false, 84:false};
 
     //Creo a los enemigos en un array y un temporizador para ir generandolos
     this.umpalumpas = [new Robot()];
@@ -93,16 +93,20 @@ class MyScene extends THREE.Scene {
 
     this.add(this.fabrica);
 
-    //Creo una variable para almacenar el tiempo de duración de la partida
+    //Creo una variable para almacenar el tiempo de duración de la partida, las muertes realizadas y el dinero
     this.tiempo = 0;
-
+    this.muertesTotales = 0;
+    this.dinero = 0;
     
     //Añado variable consumible y un contador para la aparición de consumibles cada 15s
     this.consumible = null;
     this.tiempoConsumible = 0;
 
-    this.muertesTotales = 0;
-    document.getElementById("muertes").textContent = this.muertesTotales;
+    //Pruebas torreta
+    this.modoConstruirTorreta = false;
+    this.torretaEnConstruccion = null;
+    this.torretas = [];
+    //this.add(this.torretas[0]);
   }
   
   initStats() {
@@ -145,14 +149,14 @@ this.background = textureCube ;
     var materialGround = new THREE.MeshPhongMaterial ({map: texture});
     
     // Ya se puede construir el Mesh
-    var ground = new THREE.Mesh (geometryGround, materialGround);
+    this.ground = new THREE.Mesh (geometryGround, materialGround);
     
     // Todas las figuras se crean centradas en el origen.
     // El suelo lo bajamos la mitad de su altura para que el origen del mundo se quede en su lado superior
-    ground.position.y = -0.1;
+    this.ground.position.y = -0.1;
     
     // Que no se nos olvide añadirlo a la escena, que en este caso es  this
-    this.add (ground);
+    this.add (this.ground);
   }
   
   createGUI () {
@@ -296,7 +300,9 @@ this.background = textureCube ;
       if(this.umpalumpas[i].tiempoMuerto>0.5){
         this.remove(this.umpalumpas[i]);
         this.muertesTotales ++;
+        this.dinero+=5;
         document.getElementById("muertes").textContent = this.muertesTotales;
+        document.getElementById("dinero").textContent = this.dinero+" $";
         this.umpalumpas.splice(i,1);
         //Si hay menos de 5 enemigos añado uno
         if(this.umpalumpas.length<6 || this.tempEnemigos>=2){
@@ -337,6 +343,15 @@ this.background = textureCube ;
     //Se ejecuta el salto y se le pasa la direccion de ese momento y la velocidad
     if(this.map[32]){
       this.jugador.saltar(this.map[38]||this.map[87], this.map[40]||this.map[83], this.map[39]||this.map[68], this.map[37]||this.map[65], velocidad);
+    }
+
+    //Se construye la torreta al pulsar T
+    if(this.map[84]){
+      if(this.torretaEnConstruccion==null && this.dinero>=100){
+        this.torretaEnConstruccion = new Torreta();
+        this.add(this.torretaEnConstruccion);
+        this.modoConstruirTorreta = true;
+      }
     }
   }
 
@@ -407,10 +422,10 @@ this.background = textureCube ;
     }
   }
 
-  instanciarProyectil(origen,destino,robot)
+  instanciarProyectil(origen,destino,robot, color)
   {
       
-      this.proyectiles.push(new Proyectil(origen,destino,robot));
+      this.proyectiles.push(new Proyectil(origen,destino,robot, color));
       this.add(this.proyectiles[this.proyectiles.length-1]);
 
   }
@@ -432,6 +447,39 @@ this.background = textureCube ;
     }
   }
 
+  actualizarTorretas(){
+
+    //Si puede construir torreta lo indico
+    if(this.dinero>=100){
+      document.getElementById("torreta").style.display = "inline-block";
+    }
+    else{
+      document.getElementById("torreta").style.display = "none";
+    }
+
+    //Si estoy en modo construir torreta muestro la posicion que tendría
+    if(this.modoConstruirTorreta){
+      document.getElementById("torreta").textContent = "Click izquierdo para construir";
+      var raycaster = new THREE.Raycaster ();
+      raycaster.setFromCamera(new THREE.Vector2(0,0), this.camera) ;
+      var colision = raycaster.intersectObject(this.ground,true);
+
+      if(colision.length>0){
+        var posicion = colision[0].point;
+        this.torretaEnConstruccion.update(null,this,new THREE.Vector3(posicion.x,1,posicion.z));
+      }
+    }
+
+    //Actualizar todas las torretas
+    for(var j = 0; j<this.torretas.length; j++){
+      this.torretas[j].update(this.umpalumpas,this);
+      //Si lleva viva 60s se elimina
+      if(this.torretas[j].tiempoViva>=60){
+        this.remove(this.torretas[j]);
+        this.torretas.splice(j,1);
+      }
+    }
+  }
 
   update () {
     //Comprobamos si se encuentra en pausa
@@ -464,6 +512,9 @@ this.background = textureCube ;
       this.comprobarColisionConsumible();
     }
 
+    //Actualizo las torretas
+    this.actualizarTorretas();
+
     //Actualiza los proyectiles
     if(!this.pausa)
       this.actualizarProyectiles();
@@ -490,7 +541,7 @@ $(function () {
   window.addEventListener ("resize", () => scene.onWindowResize());
 
   //Gestionar el movimiento con las teclas (izquierda, arriba, derecha, abajo) (w,a,s,d) (espacio) (shift)
-  var map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false, 32:false, 16:false};
+  var map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false, 32:false, 16:false, 84:false};
 
   //Eventos de pulsacion de teclas
   window.addEventListener("keydown", function (e) {
@@ -532,6 +583,20 @@ $(function () {
   //Deteccion disparo
   window.addEventListener("click", function(event){
     if(document.pointerLockElement==document.body && !scene.pausa){
+      //Si esta en modo construir torreta la construye
+      if(scene.modoConstruirTorreta){
+        scene.torretaEnConstruccion.fijarTorreta();
+        scene.torretas.push(scene.torretaEnConstruccion);
+        scene.remove(scene.torretaEnConstruccion);
+        scene.add(scene.torretas[scene.torretas.length-1]);
+        scene.dinero -= 100;
+        document.getElementById("dinero").textContent = scene.dinero+" $";
+        scene.torretaEnConstruccion = null;
+        scene.modoConstruirTorreta = false;
+        document.getElementById("torreta").textContent = "Para construir una torreta por 100$ pulsa T";
+      }
+      //En caso contrario dispara
+      else{
       //Se inicia el efectoDisparo
       scene.jugador.disparo();
 
@@ -542,14 +607,13 @@ $(function () {
       mouse.x = 0; 
       mouse.y = 0;
 
-
-
       //Se construye un rayo que parte de la cámara ( el ojo del 
       // y que pasa por la posición donde se ha hecho clic
       var raycaster = new THREE.Raycaster ();
       raycaster.setFromCamera(mouse, scene.camera) ;
 
-      scene.instanciarProyectil(raycaster.ray.origin,raycaster.ray.direction,scene.umpalumpas);
+      scene.instanciarProyectil(raycaster.ray.origin,raycaster.ray.direction,scene.umpalumpas, 0xCF0000);
+      }
     }
   });
 

@@ -235,7 +235,8 @@ class Robot extends THREE.Object3D {
 
   eliminacionInstantanea()
   {
-    this.vida -= this.vida + 1;
+    this.vida = 1;
+    this.recibeDisparo();
   }
 
   recibeDisparo(){

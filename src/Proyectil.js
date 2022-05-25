@@ -1,7 +1,7 @@
 import * as THREE from '../libs/three.module.js'
  
 class Proyectil extends THREE.Object3D {
-  constructor(origen,obj,robots) {
+  constructor(origen,obj,robots, color) {
     super();
 
     this.origen = new THREE.Vector3(origen.x,origen.y,origen.z);
@@ -12,12 +12,12 @@ class Proyectil extends THREE.Object3D {
 
     var BarridoGeom = new THREE.TorusBufferGeometry(0.8,0.2,10,50);
     // Como material se crea uno a partir de un color
-    var BarridoMat = new THREE.MeshToonMaterial({color: 0xCF0000, transparent:true, opacity:0.8});
+    var BarridoMat = new THREE.MeshToonMaterial({color: color, transparent:true, opacity:0.8});
     // Ya podemos construir el Mesh
     this.objeto = new THREE.Mesh (BarridoGeom, BarridoMat);
 
 
-    this.objetivo = new THREE.Vector3(obj.x * 1000000, obj.y * 1000000  , obj.z * 1000000)
+    this.objetivo = new THREE.Vector3(obj.x * 10000, obj.y * 10000  , obj.z * 10000)
 
     this.robots = robots;
 
