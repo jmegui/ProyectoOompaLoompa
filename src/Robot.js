@@ -26,6 +26,7 @@ class Robot extends THREE.Object3D {
     }, undefined, ( e ) => { console.error( e ); }
     );
 
+    //Para colocar el centro del objeto en el centro del modelo
     this.position.y += 2;
 
     //Fijamos el objetivo
@@ -43,9 +44,6 @@ class Robot extends THREE.Object3D {
 
     //Creamos la barra de vida
     this.crearBarraDeVida();
-
-    //Almacena el espacio de colision
-    this.crearColision();
 
     //Genero su posición de manera aleatoria con respecto al centro
     this.rotateY(Math.random()*2*Math.PI);
@@ -141,6 +139,7 @@ class Robot extends THREE.Object3D {
       this.velocidad = 1;
       this.vida = 300;
       this.vidaMax = 300;
+      this.position.y += 2;
     }
     //Si el aleatorio es menor de 0.2 creo un enano, mas rapido pero con menos vida
     else if(aleatorio<0.2){
@@ -149,17 +148,9 @@ class Robot extends THREE.Object3D {
       this.velocidad = 5;
       this.vida = 30;
       this.vidaMax = 30;
+      this.position.y -= 1;
     }
     
-  }
-
-  crearColision(){
-    const cilindro = new THREE.CylinderGeometry( 1.7, 1.7, 4, 32 );
-    var material = new THREE.MeshLambertMaterial({color: 0x00ff00, transparent: true,opacity: 0.0});
-    this.colision = new THREE.Mesh( cilindro, material );
-    this.colision.userData = this;
-    this.colision.position.y = 2;
-    this.add( this.colision );
   }
 
   getDistancia(inicio,fin)
