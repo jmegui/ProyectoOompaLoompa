@@ -136,7 +136,7 @@ this.background = textureCube ;
     var geometryGround = new THREE.BoxGeometry (500,0.2,500);
     
     // El material se hará con una textura de madera
-    var texture = new THREE.TextureLoader().load('../imgs/wood.jpg');
+    var texture = new THREE.TextureLoader().load('../imgs/nieve.png');
     var materialGround = new THREE.MeshPhongMaterial ({map: texture});
     
     // Ya se puede construir el Mesh
