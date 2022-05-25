@@ -19,7 +19,7 @@ class Proyectil extends THREE.Object3D {
     // this.objetivo = obj
 
 
-    this.objetivo = new THREE.Vector3(obj.x * 10000, obj.y * 10000  , obj.z * 10000)
+    this.objetivo = new THREE.Vector3(obj.x * 1000000, obj.y * 1000000  , obj.z * 1000000)
 
     if(robot !=null)
     {
