@@ -20,6 +20,9 @@ import {Reparacion} from './Reparacion.js'
 import {Calaveras} from './Calaveras.js'
 
 
+import {Proyectil} from './Proyectil.js'
+
+
  
 /// La clase fachada del modelo
 /**
@@ -29,6 +32,9 @@ import {Calaveras} from './Calaveras.js'
 class MyScene extends THREE.Scene {
   constructor (myCanvas) {
     super();
+
+
+    this.proyectiles = [];
     
     // Lo primero, crear el visualizador, pasándole el lienzo sobre el que realizar los renderizados.
     this.renderer = this.createRenderer(myCanvas);
@@ -338,7 +344,7 @@ this.background = textureCube ;
   //Comprobar final partida
   comprobarFinalPartida(){
     //Si el jugador esta muerto se acaba la partida
-    if(this.jugador.vida==0 || this.fabrica.vida==0){
+    if(this.jugador.vida<=0 || this.fabrica.vida<=0){
       this.pausa = true;
       this.finPartida = true;
       document.exitPointerLock();
@@ -402,9 +408,30 @@ this.background = textureCube ;
     }
   }
 
-  instanciarProyectil()
+  // instanciarProyectil()
+  // {
+  //   this.jugador.instanciarProyectil();
+  // }
+
+  instanciarProyectil(destino,robot)
   {
-    this.jugador.instanciarProyectil();
+    this.proyectiles.push(new Proyectil(this.jugador,destino,robot));
+    this.add(this.proyectiles[this.proyectiles.length-1]);
+  }
+
+  actualizarProyectiles()
+  {
+    for(var i = 0; i < this.proyectiles.length;i++)
+    {
+      this.proyectiles[i].update();
+
+      if(this.proyectiles[i].distanciaRecorrida > 40.0 || this.proyectiles[i].distanciaRecorrida >= this.proyectiles[i].distanciaTotal - 5)
+      {
+        this.proyectiles[i].quitarVidaAlRobot();
+        this.proyectiles[i].objeto.geometry.dispose();
+        this.remove(this.proyectiles[i]);
+      }
+    }
   }
 
 
@@ -438,6 +465,8 @@ this.background = textureCube ;
       this.consumible.update();
       this.comprobarColisionConsumible();
     }
+
+    this.actualizarProyectiles();
 
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
     this.renderer.render (this, this.getCamera());
@@ -513,7 +542,7 @@ $(function () {
       mouse.x = 0; 
       mouse.y = 0;
 
-      scene.instanciarProyectil();
+
 
       //Se construye un rayo que parte de la cámara ( el ojo del 
       // y que pasa por la posición donde se ha hecho clic
@@ -537,7 +566,8 @@ $(function () {
       if (pickedObjects.length > 0) {
         // Se puede referenciar el Mesh clicado
         var selectedObject = pickedObjects[0].object;
-        selectedObject.userData.recibeDisparo();
+        scene.instanciarProyectil(selectedObject.userData.position,selectedObject.userData);
+        // selectedObject.userData.recibeDisparo();
       } 
     }
   });

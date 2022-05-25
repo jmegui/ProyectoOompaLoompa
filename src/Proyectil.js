@@ -1,10 +1,14 @@
 import * as THREE from '../libs/three.module.js'
  
 class Proyectil extends THREE.Object3D {
-  constructor(origen,obj) {
+  constructor(origen,obj,robot) {
     super();
+
+    this.origen = new THREE.Vector3(origen.position.x,origen.position.y,origen.position.z);
     
     this.clock = new THREE.Clock();
+
+    this.tiempo = 0;
 
     var BarridoGeom = new THREE.TorusBufferGeometry(0.8,0.2,10,50);
     // Como material se crea uno a partir de un color
@@ -14,14 +18,24 @@ class Proyectil extends THREE.Object3D {
 
     this.objetivo = obj
 
+    this.robot = robot;
+
+    this.efecto = false;
+
     this.add (this.objeto);
 
 
-    this.rotateY(Math.PI/2);
 
-    this.position.x = 0.7
-    this.position.z = 0.5;
-    this.position.y = 2.5
+
+    this.distanciaRecorrida = 0;
+
+    this.distanciaTotal = this.getDistancia(origen.position,this.objetivo)
+
+    this.position.x = origen.position.x
+    this.position.z = origen.position.z;
+    this.position.y = origen.position.y + 2;
+
+    this.lookAt(this.objetivo);
 
 
   }
@@ -33,6 +47,16 @@ class Proyectil extends THREE.Object3D {
   
   intersecta(robot){
     return (this.getDistancia(this.position,robot.position)<2);
+  }
+
+  quitarVidaAlRobot()
+  {
+    if(!this.efecto)
+    {
+      this.robot.recibeDisparo();
+      this.efecto = true;
+    }
+
   }
 
   aproximar(velocidad)
@@ -85,14 +109,14 @@ class Proyectil extends THREE.Object3D {
     // Y por último la traslación
 
 
-      // this.aproximar(3 * this.clock.getDelta());
+      this.aproximar(30 * this.clock.getDelta());
 
-      // if(this.position.x >= 900)
-      // {
-      //   this.objeto.geometry.dispose();
-      // }
-      this.position.x += 50 * this.clock.getDelta();
-      this.position.z += 50 * this.clock.getDelta();
+
+      this.distanciaRecorrida = this.getDistancia(this.origen,this.position);
+
+
+      // this.position.x += 50 * this.clock.getDelta();
+      // this.position.z += 50 * this.clock.getDelta();
 
   }
 }
