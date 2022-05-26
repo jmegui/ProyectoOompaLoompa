@@ -124,7 +124,7 @@ class MyScene extends THREE.Scene {
     // La luz ambiental solo tiene un color y una intensidad
     // Se declara como   var   y va a ser una variable local a este método
     //    se hace así puesto que no va a ser accedida desde otros métodos
-    var ambientLight = new THREE.AmbientLight(0xccddee, 0.10);
+    var ambientLight = new THREE.AmbientLight(0xccddee, 0.20);
     // La añadimos a la escena
     this.add (ambientLight);
     
@@ -133,7 +133,7 @@ class MyScene extends THREE.Scene {
     // Si no se le da punto de mira, apuntará al (0,0,0) en coordenadas del mundo
     // En este caso se declara como   this.atributo   para que sea un atributo accesible desde otros métodos.
     this.spotLight = new THREE.SpotLight( 0xffffff);
-    this.spotLight.position.set( -60, 70, 0 );
+    this.spotLight.position.set( -200, 100, 0 );
     this.add (this.spotLight);
     this.setLightIntensity(1);
   }
@@ -207,6 +207,7 @@ class MyScene extends THREE.Scene {
       var dt = this.clock.getDelta();
       this.tiempo += dt;
       this.tiempoConsumible += dt;
+      this.actualizarDiaNoche(dt);
       document.getElementById("tiempoPartida").textContent=Math.round(this.tiempo);
     }
   }
@@ -224,11 +225,11 @@ class MyScene extends THREE.Scene {
     }
   }
 
-  actualizarDiaNoche()
+  actualizarDiaNoche(dt)
   {
     if(!this.noche) // si es de día
     {
-      this.setLightIntensity(this.spotLight.intensity - 0.1 * this.clock.getDelta());
+      this.setLightIntensity(this.spotLight.intensity - 0.01 * dt);
       if(this.spotLight.intensity <= 0)
       {
         this.noche = true;
@@ -236,7 +237,7 @@ class MyScene extends THREE.Scene {
     }
     else
     {
-      this.setLightIntensity(this.spotLight.intensity + 0.2 * this.clock.getDelta());
+      this.setLightIntensity(this.spotLight.intensity + 0.02 * dt);
       if(this.spotLight.intensity >= 1)
       {
         this.noche = false;
@@ -320,12 +321,6 @@ aplicarControles(){
       this.modoConstruirTorreta = true;
     }
   }
-
-  //Se enciende se apaga la linterna
-  if(this.map[70])
-  {
-    this.jugador.alternarLinterna();
-  }
 }
 
 /*______________________________________________________________________________________________________________________*/
@@ -404,20 +399,7 @@ aplicarControles(){
   //Comprobar colision consumible
   comprobarColisionConsumible(){
     //Si el consumible esta intersectando con el jugador aplica la acción propia y se elimina
-    if(!this.pausa && this.consumible.intersecta(this.jugador)){
-      if(this.consumible.tipo=="corazon"){
-        this.jugador.vida += 20;
-        if(this.jugador.vida>100) this.jugador.vida = 100;
-        this.consumible.objeto.geometry.dispose();
-      }
-      else if(this.consumible.tipo=="reparacion"){
-        this.fabrica.vida += 100;
-        if(this.fabrica.vida>500) this.fabrica.vida = 500;
-      }
-      else{
-        this.eliminarTodosLosEnemigos();
-      }
-
+    if(!this.pausa && this.consumible.intersecta(this)){
       this.remove(this.consumible);
       this.consumible = null;
       this.tiempoConsumible=0;
@@ -498,7 +480,6 @@ aplicarControles(){
     if (this.stats) this.stats.update();
     this.comprobarFinalPartida();//Se comprueba si se ha acabado la partida
     this.actualizarBarrasDeVida();//Se actualiza la barra de vida del jugador y la fabrica
-    this.actualizarDiaNoche();//Se actualiza el ciclo día noche (aumenta y disminuye la intensidad de la luz focal de la escena)
 
     /*-----------JUGADOR------------*/    
     this.jugador.update(this.pausa); // Se actualiza el jugador
@@ -555,6 +536,11 @@ $(function () {
     if (e.keyCode in map) {
         map[e.keyCode] = true;
         scene.map= map;
+
+        //Si es la tecla F alterno la linterna(Se detecta aparte para evitar que mantener presionada la tecla alterne muy rapido)
+        if(e.keyCode==70) {
+          scene.jugador.alternarLinterna();
+        }
     }
   });
   window.addEventListener("keyup", function (e) {

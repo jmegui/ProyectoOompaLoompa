@@ -4,29 +4,23 @@ class Proyectil extends THREE.Object3D {
   constructor(origen,obj,robots, color) {
     super();
 
-    this.origen = new THREE.Vector3(origen.x,origen.y,origen.z);
-    
+    /*-----------ATRIBUTOS-PARA-GESTIONAR-EVENTOS-------------*/
     this.clock = new THREE.Clock();
+    this.origen = new THREE.Vector3(origen.x,origen.y,origen.z);
+    this.objetivo = new THREE.Vector3(obj.x * 10000, obj.y * 10000  , obj.z * 10000);
+    this.robots = robots;
+    this.alcanzados = new Array(this.robots.length);//Almaceno los robots alcanzados a los que ya se les ha aplicado el daño de disparo
+    this.distanciaTotal = this.getDistancia(this.position,this.objetivo);
+    this.distanciaRecorrida = 0;
 
-    this.tiempo = 0;
-
+    /*------------------CREACION-GEOMETRIA--------------------*/
     var BarridoGeom = new THREE.TorusBufferGeometry(0.8,0.2,10,50);
     // Como material se crea uno a partir de un color
     var BarridoMat = new THREE.MeshToonMaterial({color: color, transparent:true, opacity:0.8});
     // Ya podemos construir el Mesh
     this.objeto = new THREE.Mesh (BarridoGeom, BarridoMat);
 
-
-    this.objetivo = new THREE.Vector3(obj.x * 10000, obj.y * 10000  , obj.z * 10000)
-
-    this.robots = robots;
-
     this.add (this.objeto);
-
-    this.distanciaTotal = this.getDistancia(this.position,this.objetivo)
-
-
-    this.distanciaRecorrida = 0;
 
     this.position.x = this.origen.x
     this.position.z = this.origen.z;
@@ -34,30 +28,29 @@ class Proyectil extends THREE.Object3D {
 
     this.lookAt(this.objetivo);
 
-    //Almaceno los robots alcanzados
-    this.alcanzados = new Array(this.robots.length);
 
   }
 
-  getDistancia(inicio,fin)
-  {
+/*______________________________________________________________________________________________________________________*/
+/*__________________________________________________ACCIONES____________________________________________________________*/
+/*______________________________________________________________________________________________________________________*/
+
+  //Calcula distancia entre dos puntos 3D
+  getDistancia(inicio,fin){
       return Math.sqrt(Math.pow(inicio.x - fin.x, 2) + Math.pow(inicio.z - fin.z, 2) +  Math.pow(inicio.y - fin.y, 2));
   }
   
+  //Comprueba si esta intersectando con un robot y en caso afirmativo le afecta el disparo
   intersecta(){
     for(var i=0; i<this.robots.length; i++){
       if(this.getDistancia(this.position,this.robots[i].position)<3 && !this.alcanzados[i]){
-        this.quitarVidaAlRobot(i);
+        this.robots[i].recibeDisparo();
         this.alcanzados[i] = true;
       }
     }
   }
 
-  quitarVidaAlRobot(n)
-  {
-    this.robots[n].recibeDisparo();
-  }
-
+  //Aproxima el proyectil al objetivo
   aproximar(velocidad)
   {
     if(Math.abs(this.objetivo.x - this.position.x) >= Math.abs(this.objetivo.z - this.position.z))

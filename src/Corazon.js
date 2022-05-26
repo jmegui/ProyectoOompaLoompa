@@ -3,10 +3,24 @@ import * as THREE from '../libs/three.module.js'
 class Corazon extends THREE.Object3D {
   constructor() {
     super();
-    
-    // Se crea la parte de la interfaz que corresponde a la caja
-    // Se crea primero porque otros métodos usan las variables que se definen para la interfaz
 
+    /*-----------CREACION-ELEMENTOS-------------*/
+    this.crearGeometria();
+    this.rotateZ(Math.PI);
+    this.scale.set(0.02,0.02,0.02);
+
+    //Genero su posición de manera aleatoria con respecto al centro
+    var distanciaAleatoria = Math.random()*(100-10)+20;
+    this.rotateY(Math.random()*2*Math.PI);
+    this.translateOnAxis(new THREE.Vector3(0,0,-1),distanciaAleatoria);
+    this.position.y = 3;
+  }
+
+/*______________________________________________________________________________________________________________________*/
+/*_______________________________________CREACION-DEL-OBJETO____________________________________________________________*/
+/*______________________________________________________________________________________________________________________*/
+
+  crearGeometria(){
     var shape = new THREE.Shape();
 
     
@@ -28,40 +42,30 @@ class Corazon extends THREE.Object3D {
 
 
     this.add (this.objeto);
-
-    
-    // Las geometrías se crean centradas en el origen.
-    // Como queremos que el sistema de referencia esté en la base,
-    // subimos el Mesh de la caja la mitad de su altura
-    this.rotateZ(Math.PI);
-    this.scale.set(0.02,0.02,0.02);
-
-    //Genero su posición de manera aleatoria con respecto al centro
-    var distanciaAleatoria = Math.random()*(100-10)+20;
-    this.rotateY(Math.random()*2*Math.PI);
-    this.translateOnAxis(new THREE.Vector3(0,0,-1),distanciaAleatoria);
-    this.position.y = 3;
-
-    this.tipo = "corazon";
   }
 
-  getDistancia(inicio,fin)
-  {
+/*______________________________________________________________________________________________________________________*/
+/*__________________________________________________ACCIONES____________________________________________________________*/
+/*______________________________________________________________________________________________________________________*/
+
+//Calcula distancia entre dos puntos a la altura del suelo
+  getDistancia(inicio,fin){
       return Math.sqrt(Math.pow(inicio.x - fin.x, 2) + Math.pow(inicio.z - fin.z, 2));
   }
   
-  intersecta(jugador){
-    return (this.getDistancia(this.position,jugador.position)<2);
+  //Comprueba si esta intersectando y aplica el efecto
+  intersecta(escena){
+    if(this.getDistancia(this.position,escena.jugador.position)<2){
+      escena.jugador.vida += 20;
+      if(escena.jugador.vida>100) escena.jugador.vida = 100;
+      this.objeto.geometry.dispose();
+      return true;
+    }
+
+    return false;
   }
   
   update () {
-    // Con independencia de cómo se escriban las 3 siguientes líneas, el orden en el que se aplican las transformaciones es:
-    // Primero, el escalado
-    // Segundo, la rotación en Z
-    // Después, la rotación en Y
-    // Luego, la rotación en X
-    // Y por último la traslación
-
     this.rotation.y += 0.01;
   }
 }
