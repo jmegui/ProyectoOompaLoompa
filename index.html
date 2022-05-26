@@ -91,19 +91,17 @@
 
 
         #letreroPausa{
-            width: 60%;
+            width: 80%;
             height: 90%;
             top: 5%;
-            left: 20%;
+            left: 10%;
             display: none;
         }
 
         .instrucciones{
-            width: 70%;
+            width: 49%;
             height: 80%;
-            display: block;
-            position: relative;
-            left: 15%;
+            display: inline-block;
         }
 
         #letreroPausa:hover, #letreroFinPartida:hover, #letreroInicio:hover{
@@ -177,7 +175,8 @@
     <div id="barraVidaJugador"><div id="vidaJugador"><span id="porcentajeVidaJ"></span></div></div>
     <div id = "letreroPausa">
         <p>PAUSA</p>
-        <img class="instrucciones" src="./imgs/instrucciones.png"/>
+        <img class="instrucciones" src="./imgs/controles.png"/>
+        <img class="instrucciones" src="./imgs/controles2.png"/>
         <p>Click aqui para continuar</p>
     </div>
     <div id = "letreroFinPartida">
@@ -188,9 +187,9 @@
     </div>
     <div id = "letreroInicio">
         <p>INICIO</p>
-        <img class="instruccionesI1" src="./imgs/instrucciones2.png"/>
-        <img class="instruccionesI2" src="./imgs/instrucciones.png"/>
-        <p>Click para empezar</p>
+        <img class="instruccionesI1" src="./imgs/instrucciones.png"/>
+        <img class="instruccionesI2" src="./imgs/instrucciones2.png"/>
+        <p id="opcion">Siguiente</p>
     </div>
     <!-- Div which will hold the Output -->
     <div id="WebGL-output">

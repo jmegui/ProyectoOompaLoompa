@@ -6,44 +6,24 @@ class Robot extends THREE.Object3D {
   constructor() {
     super();
 
-    //Creamos el reloj para controlar el delta time
-    this.clock = new THREE.Clock();
-
-    //Cargamos el modelo del robot
-    var loader = new GLTFLoader();
-    loader.load( '../models/gltf/robot.glb', ( gltf ) => {
-      // El modelo está en el atributo  scene
-      this.model= gltf.scene;
-      // Y las animaciones en el atributo  animations
-      var animations = gltf.animations;
-      // No olvidarse de colgar el modelo del Object3D de esta instancia de la clase (this)
-      this.model.position.y -= 2;
-      this.add( this.model );
-
-      this.createActions(this.model,animations);
-      
-      // Se crea la interfaz de usuario que nos permite ver las animaciones que tiene el modelo y qué realizan
-    }, undefined, ( e ) => { console.error( e ); }
-    );
-
-    //Para colocar el centro del objeto en el centro del modelo
-    this.position.y += 2;
-
-    //Fijamos el objetivo
-    this.objetivo = ['fabrica',new Vector3(0,0,0)];
-
-    //Almacenamos si se encuentra corriendo, su velocidad y su velocidad de animación
+    /*-----------ATRIBUTOS-PARA-GESTIONAR-EVENTOS-------------*/
+    this.clock = new THREE.Clock();//Creamos el reloj para controlar el delta time
+    this.objetivo = ['fabrica',new Vector3(0,0,0)];//Fijamos el objetivo
+      //Almacenamos si se encuentra corriendo, su velocidad y su velocidad de animación
     this.corriendo = false;
     this.velocidad  = 2.4;
 
-    //Almacena la vida, el tiempo de animacion del puñetazo para realizar los golpes y el tiempo que lleva muerto para eliminarlo de la escena
-    this.vida = 100;
-    this.vidaMax = 100;
-    this.puñetazo = 0.1;
-    this.tiempoMuerto = 0;
+    this.vida = 100;//Almacena la vida
+    this.vidaMax = 100;//Almacena la vida maxima
+    this.puñetazo = 0.1;//El tiempo de animacion del puñetazo para realizar los golpes
+    this.tiempoMuerto = 0;//El tiempo que lleva muerto para eliminarlo de la escena
 
-    //Creamos la barra de vida
-    this.crearBarraDeVida();
+    /*-----------CREACION-ELEMENTOS-------------*/
+    this.cargarModelo();
+    this.crearBarraDeVida();//Creamos la barra de vida
+
+    /*------------AJUSTE-PARAMETROS-------------*/
+    this.position.y += 2;//Para colocar el centro del objeto en el centro del modelo
 
     //Genero su posición de manera aleatoria con respecto al centro
     this.rotateY(Math.random()*2*Math.PI);
@@ -55,7 +35,9 @@ class Robot extends THREE.Object3D {
     this.enemigoEspecial();
   }
   
-  // ******* ******* ******* ******* ******* ******* ******* 
+/*______________________________________________________________________________________________________________________*/
+/*_______________________________________CREACION-DEL-OBJETO____________________________________________________________*/
+/*______________________________________________________________________________________________________________________*/
   
   createActions (model, animations) {
     // Se crea un mixer para dicho modelo
@@ -126,7 +108,24 @@ class Robot extends THREE.Object3D {
     this.activeAction.play();    
   }
 
-  // ******* ******* ******* ******* ******* ******* ******* 
+  cargarModelo(){
+    //Cargamos el modelo del robot
+    var loader = new GLTFLoader();
+    loader.load( '../models/gltf/robot.glb', ( gltf ) => {
+      // El modelo está en el atributo  scene
+      this.model= gltf.scene;
+      // Y las animaciones en el atributo  animations
+      var animations = gltf.animations;
+      // No olvidarse de colgar el modelo del Object3D de esta instancia de la clase (this)
+      this.model.position.y -= 2;
+      this.add( this.model );
+
+      this.createActions(this.model,animations);
+      
+      // Se crea la interfaz de usuario que nos permite ver las animaciones que tiene el modelo y qué realizan
+    }, undefined, ( e ) => { console.error( e ); }
+    );
+  }
 
   enemigoEspecial(){
     var aleatorio = Math.random();
@@ -152,6 +151,25 @@ class Robot extends THREE.Object3D {
     }
     
   }
+
+  crearBarraDeVida(){
+    const geometria = new THREE.BoxGeometry( 3, 0.3, 0.1 );
+    const material = new THREE.MeshBasicMaterial( {color: 0xff0000} );
+    this.barraVida = new THREE.Mesh( geometria, material );
+    this.barraVida.position.y = 5;
+
+    const geometria2 = new THREE.BoxGeometry( 3.1, 0.31, 0.11 );
+    const material2 = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+    this.cantidadVida = new THREE.Mesh( geometria2, material2 );
+    this.cantidadVida.position.y = 5;
+
+    this.add(this.barraVida);
+    this.add(this.cantidadVida);
+  }
+
+/*______________________________________________________________________________________________________________________*/
+/*__________________________________________________ACCIONES____________________________________________________________*/
+/*______________________________________________________________________________________________________________________*/
 
   getDistancia(inicio,fin)
   {
@@ -210,21 +228,6 @@ class Robot extends THREE.Object3D {
     }
   }
 
-  crearBarraDeVida(){
-    const geometria = new THREE.BoxGeometry( 3, 0.3, 0.1 );
-    const material = new THREE.MeshBasicMaterial( {color: 0xff0000} );
-    this.barraVida = new THREE.Mesh( geometria, material );
-    this.barraVida.position.y = 5;
-
-    const geometria2 = new THREE.BoxGeometry( 3.1, 0.31, 0.11 );
-    const material2 = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-    this.cantidadVida = new THREE.Mesh( geometria2, material2 );
-    this.cantidadVida.position.y = 5;
-
-    this.add(this.barraVida);
-    this.add(this.cantidadVida);
-  }
-
   actualizarVida(){
 
     this.cantidadVida.position.x = 1.55;
@@ -232,9 +235,7 @@ class Robot extends THREE.Object3D {
     this.cantidadVida.position.x = -1.55+1.55*this.vida/this.vidaMax;
   }
 
-
-  eliminacionInstantanea()
-  {
+  eliminacionInstantanea(){
     this.vida = 1;
     this.recibeDisparo();
   }
@@ -313,10 +314,13 @@ class Robot extends THREE.Object3D {
 
           this.lookAt(this.objetivo[1]);
         }
+
+        //Si esta muerto aumento el temporizador del tiempo que lleva muerto
         else{
-          
           this.tiempoMuerto+=dt;
         }
+
+        //Actualizo el mixer
         this.mixer.update (dt)
       }
     }

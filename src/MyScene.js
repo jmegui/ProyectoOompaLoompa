@@ -5,22 +5,15 @@ import * as THREE from '../libs/three.module.js'
 import { GUI } from '../../libs/dat.gui.module.js'
 import { TrackballControls } from '../../libs/TrackballControls.js'
 import { Stats } from '../../libs/stats.module.js'
+
 // Clases de mi proyecto
-
 import {Robot} from './Robot.js'
-
 import { Jugador } from './Jugador.js'
-
 import {Fabrica} from './Fabrica.js'
-
 import {Corazon} from './Corazon.js'
-
 import {Reparacion} from './Reparacion.js'
-
 import {Calaveras} from './Calaveras.js'
-
 import {Proyectil} from './Proyectil.js'
-
 import {Torreta} from './Torreta.js'
  
 /// La clase fachada del modelo
@@ -32,89 +25,56 @@ class MyScene extends THREE.Scene {
   constructor (myCanvas) {
     super();
 
-
-    this.proyectiles = [];
-    
     // Lo primero, crear el visualizador, pasándole el lienzo sobre el que realizar los renderizados.
     this.renderer = this.createRenderer(myCanvas);
-    
-    // Se añade a la gui los controles para manipular los elementos de esta clase
-    // this.gui = this.createGUI ();
-    
     this.initStats();
 
-    this.clock = new THREE.Clock();
-    
-    // Construimos los distinos elementos que tendremos en la escena
-
-    // Todo elemento que se desee sea tenido en cuenta en el renderizado de la escena debe pertenecer a esta. Bien como hijo de la escena (this en esta clase) o como hijo de un elemento que ya esté en la escena.
-    // Tras crear cada elemento se añadirá a la escena con   this.add(variable)
-    this.createLights ();
-    
-    // Un suelo 
-    this.createGround ();
-
-    //El entorno
-    this.createEntorno();
-
-    //Almacena si el juego se encuentra en pausa
-    this.pausa = false;
-    
-    // Y unos ejes. Imprescindibles para orientarnos sobre dónde están las cosas
-    this.axis = new THREE.AxesHelper (5);
+    /*-----------CREACION-DE-ELEMENTOS-DEL-ENTORNO------------*/
+    this.createLights (); // Las luces
+    this.createGround (); // El suelo
+    this.createEntorno(); // El entorno
+    this.axis = new THREE.AxesHelper (5); //Creacion de los ejes
     this.add (this.axis);
 
-    //Para indicar el fin de partida
-    this.finPartida = false;
-    
-    // El modelo puede incluir su parte de la interfaz gráfica de usuario. Le pasamos la referencia a 
-    // la gui y el texto bajo el que se agruparán los controles de la interfaz que añada el modelo.
-    this.jugador = new Jugador(this.gui, "Controles de la Caja");
-    //Asignamos como cámara la cámara del jugador
-    this.camera = this.jugador.getCamera();
-
-    this.add (this.jugador);
-
-    //Para la pulsacion de teclas (izquierda, arriba, derecha, abajo) (w,a,s,d) (construir torreta)
+    /*-----------ATRIBUTOS-PARA-GESTIONAR-EVENTOS-------------*/
+    this.clock = new THREE.Clock(); //El reloj para gestionar los eventos relacionados con el tiempo
+    this.pausa = false; //Almacena si el juego se encuentra en pausa
+    this.finPartida = false; //Para indicar el fin de partida
+      //Para la pulsacion de teclas (izquierda, arriba, derecha, abajo) (w,a,s,d) (t)
     this.map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false, 32:false, 16: false, 84:false};
+    this.tiempo = 0;//Tiempo de partida
+    this.muertesTotales = 0;//Almacena numero de robots eliminados
+    this.dinero = 0;//Cantidad de dinero obtenida por el jugador
+    this.tiempoConsumible = 0;//Tiempo que lleva el consumible actual
+    this.modoConstruirTorreta = false; //Indica si se encuentra en modo construir torreta
+    this.noche = false; //Indica si nos encontramos en la noche
 
-    //Creo a los enemigos en un array y un temporizador para ir generandolos
-    this.umpalumpas = [new Robot()];
-    this.add(this.umpalumpas[0]);
-    this.tempEnemigos = 0;
+    /*-----------ELEMENTOS-DE-INTERACCIOn-DE-LA-ESCENA--------*/
+    this.proyectiles = []; //Almacena los proyectiles que se encuentran en la escena
+    this.jugador = new Jugador(); //Almacena al jugador
+    this.camera = this.jugador.camera; //Se establece como camara la camara del jugador(Para primera persona)
+    this.robots = [new Robot()]; //Almacena los robots
+    this.fabrica = new Fabrica(); //Almacena la fabrica
+    this.consumible = null;//Almacena el consumible que se encuentra activo
+    this.torretas = [];//Almacena las torretas
+    this.torretaEnConstruccion = null; //Almacena la torreta en construccion
 
+    /*-----------AÑADE-ELEMENTOS-DE-INTERACCION---------------*/
+    this.add (this.jugador);
+    this.add(this.robots[0]);
     for(var i = 0; i<9; i++){
-      this.umpalumpas.push(new Robot());
-      this.add(this.umpalumpas[i+1]);
+      this.robots.push(new Robot());
+      this.add(this.robots[i+1]);
     }
-
-    //Añado la fabrica
-    this.fabrica = new Fabrica();
-
     this.add(this.fabrica);
-
-    //Creo una variable para almacenar el tiempo de duración de la partida, las muertes realizadas y el dinero
-    this.tiempo = 0;
-    this.muertesTotales = 0;
-    this.dinero = 0;
-    
-    //Añado variable consumible y un contador para la aparición de consumibles cada 15s
-    this.consumible = null;
-    this.tiempoConsumible = 0;
-
-    //Pruebas torreta
-    this.modoConstruirTorreta = false;
-    this.torretaEnConstruccion = null;
-    this.torretas = [];
-    //this.add(this.torretas[0]);
-
-    this.noche = false;
   }
   
+/*______________________________________________________________________________________________________________________*/
+/*_______________________________________CREACION-DE-ELEMENTOS-DEL-ENTORNO______________________________________________*/
+/*______________________________________________________________________________________________________________________*/
+
   initStats() {
-  
     var stats = new Stats();
-    
     stats.setMode(0); // 0: fps, 1: ms
     
     // Align top-left
@@ -128,21 +88,19 @@ class MyScene extends THREE.Scene {
   }
 
   createEntorno() {
-    var path = "./entorno/"
-  var format = '.png'
-  var urls = [
-  path + 'px' + format , path + 'nx' + format ,
-  path + 'py' + format , path + 'ny' + format ,
-  path + 'pz' + format , path + 'nz' + format
-  ] ;
-var textureCube = new THREE.CubeTextureLoader().load (urls) ;
-this.background = textureCube ;
+    var path = "./imgs/entorno/"
+    var format = '.png'
+    var urls = [
+      path + 'px' + format , path + 'nx' + format ,
+      path + 'py' + format , path + 'ny' + format ,
+      path + 'pz' + format , path + 'nz' + format
+      ] ;
+    var textureCube = new THREE.CubeTextureLoader().load (urls) ;
+    this.background = textureCube ;
   }
-
 
   createGround () {
     // El suelo es un Mesh, necesita una geometría y un material.
-    
     // La geometría es una caja con muy poca altura
     var geometryGround = new THREE.BoxGeometry (500,0.2,500);
     
@@ -160,35 +118,6 @@ this.background = textureCube ;
     // Que no se nos olvide añadirlo a la escena, que en este caso es  this
     this.add (this.ground);
   }
-  
-  // createGUI () {
-  //   // Se crea la interfaz gráfica de usuario
-  //   var gui = new GUI();
-    
-  //   // La escena le va a añadir sus propios controles. 
-  //   // Se definen mediante un objeto de control
-  //   // En este caso la intensidad de la luz y si se muestran o no los ejes
-  //   this.guiControls = {
-  //     // En el contexto de una función   this   alude a la función
-  //     lightIntensity : 0.5,
-  //     axisOnOff : true
-  //   }
-
-  //   // Se crea una sección para los controles de esta clase
-  //   var folder = gui.addFolder ('Luz y Ejes');
-    
-  //   // Se le añade un control para la intensidad de la luz
-  //   folder.add (this.guiControls, 'lightIntensity', 0, 1, 0.1)
-  //     .name('Intensidad de la Luz : ')
-  //     .onChange ( (value) => this.setLightIntensity (value) );
-    
-  //   // Y otro para mostrar u ocultar los ejes
-  //   folder.add (this.guiControls, 'axisOnOff')
-  //     .name ('Mostrar ejes : ')
-  //     .onChange ( (value) => this.setAxisVisible (value) );
-    
-  //   return gui;
-  // }
   
   createLights () {
     // Se crea una luz ambiental, evita que se vean complentamente negras las zonas donde no incide de manera directa una fuente de luz
@@ -235,12 +164,6 @@ this.background = textureCube ;
     return renderer;  
   }
   
-  getCamera () {
-    // En principio se devuelve la única cámara que tenemos
-    // Si hubiera varias cámaras, este método decidiría qué cámara devuelve cada vez que es consultado
-    return this.camera;
-  }
-  
   setCameraAspect (ratio) {
     // Cada vez que el usuario modifica el tamaño de la ventana desde el gestor de ventanas de
     // su sistema operativo hay que actualizar el ratio de aspecto de la cámara
@@ -258,8 +181,11 @@ this.background = textureCube ;
     this.renderer.setSize (window.innerWidth, window.innerHeight);
   }
 
-  
+/*______________________________________________________________________________________________________________________*/
+/*_______________________________________ELEMENTOS_DE_GESTION_DE_EVENTOS________________________________________________*/
+/*______________________________________________________________________________________________________________________*/
 
+  //Actualiza las barras de vida de la fabrica y el jugador
   actualizarBarrasDeVida(){
     document.getElementById("vidaFabrica").style.width=this.fabrica.vida/5+"%";
     document.getElementById("porcentajeVidaF").textContent="Fabrica/"+this.fabrica.vida/5+"%";
@@ -267,7 +193,7 @@ this.background = textureCube ;
     document.getElementById("porcentajeVidaJ").textContent="Jugador/"+this.jugador.vida+"%";
   }
 
-  //Comprobar pausa
+  //Comprueba si nos encontramos en estado de pausa
   comprobarPausa(){
     this.pausa = (document.pointerLockElement!=document.body);
     //Si lo esta mostramos el letrero de pausa, si no lo ocultamos y se actualiza el contador de partida
@@ -280,86 +206,8 @@ this.background = textureCube ;
       //Actualizamos el contador de partida y temporizador de enemigos
       var dt = this.clock.getDelta();
       this.tiempo += dt;
-      this.tempEnemigos += dt;
       this.tiempoConsumible += dt;
       document.getElementById("tiempoPartida").textContent=Math.round(this.tiempo);
-    }
-  }
-
-  //Actualizo el estado de los enemigos
-  actualizarEnemigos(){
-    for(var i = 0; i<this.umpalumpas.length; i++){
-      this.umpalumpas[i].update(this.pausa,this.jugador.position);
-
-      //Si el robot esta golpeando se actualiza la vida del jugador o de la fabrica
-      if(this.umpalumpas[i].puñetazo==0 && !this.pausa){
-        if(this.umpalumpas[i].objetivo[0]=='fabrica' && this.fabrica.vida>0)
-          this.fabrica.vida-=this.umpalumpas[i].daño;
-        else if(this.jugador.vida>0)
-          this.jugador.vida-=this.umpalumpas[i].daño;
-      }
-
-      //Si hace 0.5 segundos que ha muerto se elimina y se añade nuevo enemigo
-      if(this.umpalumpas[i].tiempoMuerto>0.5){
-        this.remove(this.umpalumpas[i]);
-        this.muertesTotales ++;
-        this.dinero+=5;
-        document.getElementById("muertes").textContent = this.muertesTotales;
-        document.getElementById("dinero").textContent = this.dinero+" $";
-        this.umpalumpas.splice(i,1);
-        //Si hay menos de 5 enemigos añado uno
-        if(this.umpalumpas.length<6 || this.tempEnemigos>=2){
-          this.umpalumpas.push(new Robot());
-          this.add(this.umpalumpas[this.umpalumpas.length-1]);
-          //Si el temporizador ha llegado a 4 se reinicia
-          if(this.tempEnemigos>=2) this.tempEnemigos = 0;
-        }
-      }
-    }
-  }
-
-  //Se aplican los controles al jugador
-  aplicarControles(){
-    var adelante = 0;
-    var lateral = 0;
-
-    //Se comprueba si esta corriendo con el shift
-    var velocidad = 1;
-    if(this.map[16]) 
-      velocidad = 1.8;
-
-    if ((this.map[38] || this.map[87]) && !(this.map[40] || this.map[83])) {
-      adelante = velocidad;
-    }
-    else if (this.map[40] || this.map[83]) {
-      adelante = -velocidad;
-    }
-    if ((this.map[39] || this.map[68]) && !(this.map[37] || this.map[65])) {
-      lateral = velocidad;
-    }
-    if (this.map[37] || this.map[65]){
-      lateral = -velocidad;
-    }
-
-    if(!this.pausa) this.jugador.avanzar(adelante,lateral);
-
-    //Se ejecuta el salto y se le pasa la direccion de ese momento y la velocidad
-    if(this.map[32]){
-      this.jugador.saltar(this.map[38]||this.map[87], this.map[40]||this.map[83], this.map[39]||this.map[68], this.map[37]||this.map[65], velocidad);
-    }
-
-    //Se construye la torreta al pulsar T
-    if(this.map[84]){
-      if(this.torretaEnConstruccion==null && this.dinero>=100){
-        this.torretaEnConstruccion = new Torreta();
-        this.add(this.torretaEnConstruccion);
-        this.modoConstruirTorreta = true;
-      }
-    }
-
-    if(this.map[70])
-    {
-      this.jugador.alternarLinterna();
     }
   }
 
@@ -376,22 +224,167 @@ this.background = textureCube ;
     }
   }
 
-  //Se aplica al coger la calavera
-  eliminarTodosLosEnemigos(){
-    for(var i = 0; i<this.umpalumpas.length; i++){
-      this.umpalumpas[i].eliminacionInstantanea();
+  actualizarDiaNoche()
+  {
+    if(!this.noche) // si es de día
+    {
+      this.setLightIntensity(this.spotLight.intensity - 0.1 * this.clock.getDelta());
+      if(this.spotLight.intensity <= 0)
+      {
+        this.noche = true;
+      }
+    }
+    else
+    {
+      this.setLightIntensity(this.spotLight.intensity + 0.2 * this.clock.getDelta());
+      if(this.spotLight.intensity >= 1)
+      {
+        this.noche = false;
+      }
     }
   }
 
+  clickIzquierdo(){
+      //Si esta en modo construir torreta la construye
+      if(this.modoConstruirTorreta){
+        this.torretaEnConstruccion.fijarTorreta();
+        this.torretas.push(this.torretaEnConstruccion);
+        this.remove(this.torretaEnConstruccion);
+        this.add(this.torretas[this.torretas.length-1]);
+        this.dinero -= 100;
+        document.getElementById("dinero").textContent = this.dinero+" $";
+        this.torretaEnConstruccion = null;
+        this.modoConstruirTorreta = false;
+        document.getElementById("torreta").textContent = "Para construir una torreta por 100$ pulsa T";
+      }
+      //En caso contrario dispara
+      else{
+        //Se inicia el efectoDisparo
+        this.jugador.disparo();
+
+        // Se obtiene la posición del clic
+        // en coordenadas de dispositivo normalizado
+        // − La esquina inferior izquierda tiene la coordenada (−1,−1) // − La esquina superior derecha tiene la coordenada (1,1) 
+        var mouse = new THREE.Vector2 ();
+        mouse.x = 0; 
+        mouse.y = 0;
+
+        //Se construye un rayo que parte de la cámara ( el ojo del 
+        // y que pasa por la posición donde se ha hecho clic
+        var raycaster = new THREE.Raycaster ();
+        raycaster.setFromCamera(mouse, this.camera) ;
+
+        this.instanciarProyectil(raycaster.ray.origin,raycaster.ray.direction,this.robots, 0xCF0000);
+      }
+  }
+
+/*______________________________________________________________________________________________________________________*/
+/*______________________________________________JUGADOR_________________________________________________________________*/
+/*______________________________________________________________________________________________________________________*/
+
+//Se aplican los controles al jugador
+aplicarControles(){
+  var adelante = 0;
+  var lateral = 0;
+
+  //Se comprueba si esta corriendo con el shift
+  var velocidad = 1;
+  if(this.map[16]) 
+    velocidad = 1.8;
+
+  //Se aplican las teclas de desplazamiento
+  if ((this.map[38] || this.map[87]) && !(this.map[40] || this.map[83])) {
+    adelante = velocidad;
+  }
+  else if (this.map[40] || this.map[83]) {
+    adelante = -velocidad;
+  }
+  if ((this.map[39] || this.map[68]) && !(this.map[37] || this.map[65])) {
+    lateral = velocidad;
+  }
+  if (this.map[37] || this.map[65]){
+    lateral = -velocidad;
+  }
+  if(!this.pausa) this.jugador.avanzar(adelante,lateral);
+
+  //Se ejecuta el salto y se le pasa la direccion de ese momento y la velocidad
+  if(this.map[32]){
+    this.jugador.saltar(this.map[38]||this.map[87], this.map[40]||this.map[83], this.map[39]||this.map[68], this.map[37]||this.map[65], velocidad);
+  }
+
+  //Se construye la torreta al pulsar T
+  if(this.map[84]){
+    if(this.torretaEnConstruccion==null && this.dinero>=100){
+      this.torretaEnConstruccion = new Torreta();
+      this.add(this.torretaEnConstruccion);
+      this.modoConstruirTorreta = true;
+    }
+  }
+
+  //Se enciende se apaga la linterna
+  if(this.map[70])
+  {
+    this.jugador.alternarLinterna();
+  }
+}
+
+/*______________________________________________________________________________________________________________________*/
+/*________________________________________________ROBOTS________________________________________________________________*/
+/*______________________________________________________________________________________________________________________*/
+
+  //Actualizo el estado de los enemigos
+  actualizarEnemigos(){
+    for(var i = 0; i<this.robots.length; i++){
+      this.robots[i].update(this.pausa,this.jugador.position);
+
+      //Si el robot esta golpeando se actualiza la vida del jugador o de la fabrica
+      if(this.robots[i].puñetazo==0 && !this.pausa){
+        if(this.robots[i].objetivo[0]=='fabrica' && this.fabrica.vida>0)
+          this.fabrica.vida-=this.robots[i].daño;
+        else if(this.jugador.vida>0)
+          this.jugador.vida-=this.robots[i].daño;
+      }
+
+      //Si hace 0.5 segundos que ha muerto se elimina y se añade nuevo enemigo
+      if(this.robots[i].tiempoMuerto>0.5){
+        this.remove(this.robots[i]);
+        this.muertesTotales ++;
+        this.dinero+=5;
+        document.getElementById("muertes").textContent = this.muertesTotales;
+        document.getElementById("dinero").textContent = this.dinero+" $";
+        this.robots.splice(i,1);
+      }
+
+      //Si hay menos de X robots añado uno, esa X se incrementa conforme avanza la partida
+      if(this.robots.length<(5+Math.round(this.tiempo/50))){
+        this.robots.push(new Robot());
+        this.add(this.robots[this.robots.length-1]);
+      }
+    }
+  }
+
+  //Se aplica al coger la calavera
+  eliminarTodosLosEnemigos(){
+    for(var i = 0; i<this.robots.length; i++){
+      this.robots[i].eliminacionInstantanea();
+    }
+  }
+
+/*______________________________________________________________________________________________________________________*/
+/*______________________________________________CONSUMIBLES_____________________________________________________________*/
+/*______________________________________________________________________________________________________________________*/
+
   //Creo un consumible
   crearConsumible(){
+    //Si habia un consumible anterior se elimina
     if(this.consumible!=null){
       if(this.consumible.tipo=="corazon")this.consumible.objeto.geometry.dispose();
       this.remove(this.consumible);
     }
 
-    var aleatorio = Math.random();
     //Hay un 20% de que salgan las calaveras, un 40% de que salga un corazon y un 40% de que salga una reparacion
+    var aleatorio = Math.random();
+
     if(aleatorio<0.4){
       this.consumible = new Corazon();
       this.add(this.consumible);
@@ -410,6 +403,7 @@ this.background = textureCube ;
 
   //Comprobar colision consumible
   comprobarColisionConsumible(){
+    //Si el consumible esta intersectando con el jugador aplica la acción propia y se elimina
     if(!this.pausa && this.consumible.intersecta(this.jugador)){
       if(this.consumible.tipo=="corazon"){
         this.jugador.vida += 20;
@@ -430,22 +424,25 @@ this.background = textureCube ;
     }
   }
 
+/*______________________________________________________________________________________________________________________*/
+/*______________________________________________PROYECTILES_____________________________________________________________*/
+/*______________________________________________________________________________________________________________________*/
+
+  //Creo proyectil y se añade a la escena
   instanciarProyectil(origen,destino,robot, color)
   {
-      
       this.proyectiles.push(new Proyectil(origen,destino,robot, color));
       this.add(this.proyectiles[this.proyectiles.length-1]);
-
   }
 
+  //Aplico actualización sobre todos los proyectiles
   actualizarProyectiles()
   {
     for(var i = 0; i < this.proyectiles.length;i++)
     {
       this.proyectiles[i].update();
-      
-      this.proyectiles[i].intersecta();
 
+      //Si pasa por debajo del suelo o si se ha desplazado 70 unidades se elimina
       if(this.proyectiles[i].distanciaRecorrida > 70.0 || this.proyectiles[i].position.y<-2)
       {
         this.proyectiles[i].objeto.geometry.dispose();
@@ -455,9 +452,12 @@ this.background = textureCube ;
     }
   }
 
-  actualizarTorretas(){
+/*______________________________________________________________________________________________________________________*/
+/*_________________________________________________TORRETAS_____________________________________________________________*/
+/*______________________________________________________________________________________________________________________*/
 
-    //Si puede construir torreta lo indico
+  actualizarTorretas(){
+    //Si puede construir torreta lo indico se muestra
     if(this.dinero>=100){
       document.getElementById("torreta").style.display = "inline-block";
     }
@@ -480,7 +480,7 @@ this.background = textureCube ;
 
     //Actualizar todas las torretas
     for(var j = 0; j<this.torretas.length; j++){
-      this.torretas[j].update(this.umpalumpas,this);
+      this.torretas[j].update(this.robots,this);
       //Si lleva viva 60s se elimina
       if(this.torretas[j].tiempoViva>=60){
         this.remove(this.torretas[j]);
@@ -489,72 +489,43 @@ this.background = textureCube ;
     }
   }
 
-  actualizarDiaNoche()
-  {
-
-    if(!this.noche) // si es de día
-    {
-      this.setLightIntensity(this.spotLight.intensity - 0.1 * this.clock.getDelta());
-
-      if(this.spotLight.intensity <= 0)
-      {
-        this.noche = true;
-      }
-    }
-    else
-    {
-      this.setLightIntensity(this.spotLight.intensity + 0.2 * this.clock.getDelta());
-
-      if(this.spotLight.intensity >= 1)
-      {
-        this.noche = false;
-      }
-    }
-  }
-
+/*______________________________________________________________________________________________________________________*/
+/*_________________________________________________ACTUALIZACION________________________________________________________*/
+/*______________________________________________________________________________________________________________________*/
   update () {
-    //Comprobamos si se encuentra en pausa
-    this.comprobarPausa();
-
+    /*-------GESTIONAR-EVENTOS-------*/
+    this.comprobarPausa();//Comprobamos si se encuentra en pausa
     if (this.stats) this.stats.update();
+    this.comprobarFinalPartida();//Se comprueba si se ha acabado la partida
+    this.actualizarBarrasDeVida();//Se actualiza la barra de vida del jugador y la fabrica
+    this.actualizarDiaNoche();//Se actualiza el ciclo día noche (aumenta y disminuye la intensidad de la luz focal de la escena)
 
-    // Se actualiza el jugador
-    this.jugador.update(this.pausa);
+    /*-----------JUGADOR------------*/    
+    this.jugador.update(this.pausa); // Se actualiza el jugador
+    this.aplicarControles(); //Se aplica el movimiento
 
-    //Actualizo a todos los enemigos
-    this.actualizarEnemigos();
+    /*-----------ROBOTS------------*/   
+    this.actualizarEnemigos();//Actualizo a todos los enemigos
   
-    //Se comprueba si se ha acabado la partida
-    this.comprobarFinalPartida();
+    /*----------CONSUMIBLE--------*/       
+    if(this.tiempoConsumible>=15)//Compruebo si hay que crear un consumible y en caso afirmativo lo creo
+      this.crearConsumible();
 
-    //Se actualiza la barra de vida del jugador y la fabrica
-    this.actualizarBarrasDeVida();
-
-    //Se ejecuta el movimiento
-    this.aplicarControles();
-
-    //Se actualiza el ciclo día noche (aumenta y disminuye la intensidad de la luz focal de la escena)
-    this.actualizarDiaNoche();
-
-    //Compruebo si hay que crear un consumible y en caso afirmativo lo creo
-    if(this.tiempoConsumible>=15)
-    this.crearConsumible();
-
-    //Compruebo si hay colision con un consumible
-    if(this.consumible!=null){
+    if(this.consumible!=null){//Compruebo si hay colision con un consumible
       this.consumible.update();
       this.comprobarColisionConsumible();
     }
 
-    //Actualizo las torretas
-    this.actualizarTorretas();
+    /*-----------TORRETA---------*/   
+    this.actualizarTorretas();//Actualizo las torretas
 
+    /*---------PROYECTILES-------*/  
     //Actualiza los proyectiles
     if(!this.pausa)
       this.actualizarProyectiles();
 
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
-    this.renderer.render (this, this.getCamera());
+    this.renderer.render (this, this.camera);
 
     // Este método debe ser llamado cada vez que queramos visualizar la escena de nuevo.
     // Literalmente le decimos al navegador: "La próxima vez que haya que refrescar la pantalla, llama al método que te indico".
@@ -577,6 +548,8 @@ $(function () {
   //Gestionar el movimiento con las teclas (izquierda, arriba, derecha, abajo) (w,a,s,d) (espacio) (shift) (t) (f)
   var map = {37: false, 38: false, 39: false, 40: false, 87: false, 65: false, 83: false, 68:false, 32:false, 16:false, 84:false, 70:false};
 
+  /*---------LISTENERS-------*/  
+
   //Eventos de pulsacion de teclas
   window.addEventListener("keydown", function (e) {
     if (e.keyCode in map) {
@@ -584,7 +557,6 @@ $(function () {
         scene.map= map;
     }
   });
-
   window.addEventListener("keyup", function (e) {
     if (e.keyCode in map) {
       map[e.keyCode] = false;
@@ -594,15 +566,25 @@ $(function () {
 
   //Deteccion click Iniciar partida
   document.getElementById("letreroInicio").addEventListener("click", function(e){
-    document.getElementById("letreroInicio").style.display="none";
-    document.body.requestPointerLock();
+    //Si no se ha pulsado aun, se cambia el contenido
+    if(document.getElementById("opcion").textContent=="Siguiente"){
+      document.getElementById("opcion").textContent = "Click para empezar";
+      document.getElementsByClassName("instruccionesI1")[0].src = "./imgs/controles.png";
+      document.getElementsByClassName("instruccionesI2")[0].src = "./imgs/controles2.png";
+    }
+    //En caso contrario se oculta
+    else{
+      document.getElementById("letreroInicio").style.display="none";
+      document.body.requestPointerLock();
+    }
   });
 
-  //Deteccion click reanudar o reiniciar partida
+  //Deteccion click reanudar partida
   document.getElementById("letreroPausa").addEventListener("click", function(e){
     document.body.requestPointerLock();
   });
 
+  //Deteccion click reiniciar partida
   document.getElementById("letreroFinPartida").addEventListener("click", function(e){
     location.reload();
   });
@@ -614,40 +596,10 @@ $(function () {
     }
   });
 
-  //Deteccion disparo
+  //Deteccion click
   window.addEventListener("click", function(event){
     if(document.pointerLockElement==document.body && !scene.pausa){
-      //Si esta en modo construir torreta la construye
-      if(scene.modoConstruirTorreta){
-        scene.torretaEnConstruccion.fijarTorreta();
-        scene.torretas.push(scene.torretaEnConstruccion);
-        scene.remove(scene.torretaEnConstruccion);
-        scene.add(scene.torretas[scene.torretas.length-1]);
-        scene.dinero -= 100;
-        document.getElementById("dinero").textContent = scene.dinero+" $";
-        scene.torretaEnConstruccion = null;
-        scene.modoConstruirTorreta = false;
-        document.getElementById("torreta").textContent = "Para construir una torreta por 100$ pulsa T";
-      }
-      //En caso contrario dispara
-      else{
-      //Se inicia el efectoDisparo
-      scene.jugador.disparo();
-
-      // Se obtiene la posición del clic
-      // en coordenadas de dispositivo normalizado
-      // − La esquina inferior izquierda tiene la coordenada (−1,−1) // − La esquina superior derecha tiene la coordenada (1,1) 
-      var mouse = new THREE.Vector2 ();
-      mouse.x = 0; 
-      mouse.y = 0;
-
-      //Se construye un rayo que parte de la cámara ( el ojo del 
-      // y que pasa por la posición donde se ha hecho clic
-      var raycaster = new THREE.Raycaster ();
-      raycaster.setFromCamera(mouse, scene.camera) ;
-
-      scene.instanciarProyectil(raycaster.ray.origin,raycaster.ray.direction,scene.umpalumpas, 0xCF0000);
-      }
+      scene.clickIzquierdo();
     }
   });
 

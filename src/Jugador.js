@@ -6,84 +6,44 @@ import { OBJLoader } from '../libs/OBJLoader.js'
 
  
 class Jugador extends THREE.Object3D {
-  constructor(gui,titleGui) {
+  constructor() {
     super();
 
-    this.clock = new THREE.Clock();
+    /*-----------ATRIBUTOS-PARA-GESTIONAR-EVENTOS-------------*/
+    this.clock = new THREE.Clock();//El reloj para gestionar los eventos relacionados con el tiempo
+    this.inclinacion = 0;//Almacena inclinacion cabeza
 
     //Valores posicion y avance
     this.vertical = new THREE.Vector3(0,1,0);
     this.frente = new THREE.Vector3(1,0,0);
     this.cantidadAvance = 12;
 
-    //Almacena inclinacion cabeza
-    this.inclinacion = 0;
-
     //Administrar salto
     this.saltando = false;
     this.direccionAlmacenada = {a:0,l:0};
+
+    //Almacenamos el porcentaje de vida del jugador
+    this.vida = 100;
+
+    //Gestionar disparo
+    this.disparando = false;
+    this.tiempoDisparo = 0;
+
+    /*-----------CREACION-ELEMENTOS-------------*/
     
     this.crearCameraPrimeraPersona();
+    this.crearLinterna();
+    this.cargarModelo();
 
-    this.spotLight = new THREE.SpotLight (0xffffff, 0 ,50,Math.PI/3,0.7);
-    this.spotLight.position.set(8,4,0);
-
-    // var geo = new THREE.BoxBufferGeometry(1,1,1);
-    // var mat = new THREE.MeshToonMaterial({color: 0xCF0000});
-
-    // this.target = new THREE.Mesh(geo,mat);
-
-    this.target = new THREE.Object3D();
-
-    this.target.position.set(20,4,0);
-
-    this.linternaEncendida = false;
-
-    this.spotLight.target = this.target;
-
-
-    this.add(this.target);
-
-    this.add(this.spotLight)
-
-    //Carga el modelo de la pistola
-    var materialLoader = new MTLLoader();
-    var objectLoader = new OBJLoader();
-    materialLoader.load('/models/pistola/11684_gun_v1_l3.mtl',
-        ( materials ) => {
-          objectLoader.setMaterials(materials);
-          objectLoader.load ('/models/pistola/11684_gun_v1_l3.obj',
-            (object) => {
-              this.pistola = object;
-              this.pistola.rotateOnAxis(new THREE.Vector3(0,1,0),Math.PI);
-              this.pistola.rotateOnAxis(new THREE.Vector3(1,0,0),-90*Math.PI/180);
-              this.pistola.scale.x=0.1;
-              this.pistola.scale.y=0.1;
-              this.pistola.scale.z=0.1;
-
-              //Creo el efecto de disparo
-              this.crearEfectoDisparo();
-              this .add (this.pistola) ;
-
-              this.pistola.position.x += 2; 
-              this.pistola.position.y += 1;
-              this.pistola.position.z += 1;
-            }, null, null);
-          });
-    
-
-      //Almacenamos el porcentaje de vida del jugador
-      this.vida = 100;
-
-      //Gestionar disparo
-      this.disparando = false;
-      this.tiempoDisparo = 0;
-
-      this.translateOnAxis(new THREE.Vector3(1,0,0),-30);
+    //Lo posiciono frente a la fabrica
+    this.translateOnAxis(new THREE.Vector3(1,0,0),-30);
   }
 
-  crearCameraPrimeraPersona(){
+/*______________________________________________________________________________________________________________________*/
+/*_______________________________________CREACION-DEL-OBJETO____________________________________________________________*/
+/*______________________________________________________________________________________________________________________*/
 
+  crearCameraPrimeraPersona(){
     this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
     // También se indica dónde se coloca
     this.camera.position.set (0, 3, 0);
@@ -108,8 +68,56 @@ class Jugador extends THREE.Object3D {
     this.efectoD.position.y -=1;
   }
 
-  alternarLinterna()
-  {
+  crearLinterna(){
+    this.spotLight = new THREE.SpotLight (0xffffff, 0 ,50,Math.PI/3,0.7);
+    this.spotLight.position.set(8,4,0);
+
+    this.target = new THREE.Object3D();
+
+    this.target.position.set(20,4,0);
+
+    this.linternaEncendida = false;
+
+    this.spotLight.target = this.target;
+
+
+    this.add(this.target);
+
+    this.add(this.spotLight)
+  }
+
+  cargarModelo(){
+    //Carga el modelo de la pistola
+    var materialLoader = new MTLLoader();
+    var objectLoader = new OBJLoader();
+    materialLoader.load('/models/pistola/11684_gun_v1_l3.mtl',
+        ( materials ) => {
+          objectLoader.setMaterials(materials);
+          objectLoader.load ('/models/pistola/11684_gun_v1_l3.obj',
+            (object) => {
+              this.pistola = object;
+              this.pistola.rotateOnAxis(new THREE.Vector3(0,1,0),Math.PI);
+              this.pistola.rotateOnAxis(new THREE.Vector3(1,0,0),-90*Math.PI/180);
+              this.pistola.scale.x=0.1;
+              this.pistola.scale.y=0.1;
+              this.pistola.scale.z=0.1;
+
+              //Creo el efecto de disparo
+              this.crearEfectoDisparo();
+              this .add (this.pistola) ;
+
+              this.pistola.position.x += 2; 
+              this.pistola.position.y += 1;
+              this.pistola.position.z += 1;
+            }, null, null);
+          });
+  }
+/*______________________________________________________________________________________________________________________*/
+/*__________________________________________________ACCIONES____________________________________________________________*/
+/*______________________________________________________________________________________________________________________*/
+
+  //Para apagar y encender la linterna
+  alternarLinterna(){
     if(this.linternaEncendida)
     {
       this.spotLight.intensity = 0.0;
@@ -172,10 +180,6 @@ class Jugador extends THREE.Object3D {
     }
   }
 
-  getCamera(){
-    return this.camera;
-  }
-
   saltar(adelante,atras,derecha,izquierda, velocidad){
     if(!this.saltando){
       this.saltando = true;
@@ -223,7 +227,7 @@ class Jugador extends THREE.Object3D {
 
   
   update (pausa) {
-    this.dt = this.clock.getDelta();
+    this.dt = this.clock.getDelta();//Actualizo el delta time
 
     if(!pausa){
       TWEEN.update();
@@ -235,8 +239,6 @@ class Jugador extends THREE.Object3D {
       if(this.disparando){
         this.aplicarEfectoDisparo();
       }
-
-      // this.actualizarProyectiles();
 
     }
 
