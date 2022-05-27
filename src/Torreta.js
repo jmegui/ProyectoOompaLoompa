@@ -106,9 +106,13 @@ class Torreta extends THREE.Object3D {
 
     //Si no esta fijada actualizo su posicion
     if(!this.fijada){
-      this.position.x = posicion.x;
-      this.position.y = posicion.y;
-      this.position.z = posicion.z;
+      //Para evitar que se coloque dentro de la fabrica o fuera del mapa
+      if(!(posicion.x<17.5 && posicion.x>-11.5 && posicion.z<12 && posicion.z>-12 ||
+          (posicion.x>120 || posicion.x<-120 || posicion.z>120 || posicion.z<-120))){
+        this.position.x = posicion.x;
+        this.position.y = posicion.y;
+        this.position.z = posicion.z;
+      }
     }
   }
 }

@@ -133,34 +133,48 @@ class Jugador extends THREE.Object3D {
   //Para realizar el movimiento del jugador si no está saltando
   avanzar(adelante,derecha){
     if(!this.saltando){
-      if(adelante && derecha){
-        var distancia = Math.sqrt(2*this.cantidadAvance*this.cantidadAvance);
-        this.translateOnAxis (this.frente, this.dt*(adelante*distancia/2));
-        this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(derecha*distancia/2));
-      }
-
-      else if(derecha)
-        this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(this.cantidadAvance*derecha));
-
-      else if(adelante)
-        this.translateOnAxis (this.frente, this.dt*(this.cantidadAvance*adelante));
-  
+      this.desplazar(adelante,derecha);
     }
   }
 
   //Para aplicar el desplazamiento almacenado en el momento del salto
   aplicarDesplazamientoAlmacenado(){
-    if(this.direccionAlmacenada.a && this.direccionAlmacenada.l){
-      var distancia = Math.sqrt(this.cantidadAvance*this.cantidadAvance);
-      this.translateOnAxis (this.frente, this.dt*(this.direccionAlmacenada.a*distancia/2));
-      this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(this.direccionAlmacenada.l*distancia/2));
+    this.desplazar(this.direccionAlmacenada.a, this.direccionAlmacenada.l);
+  }
+
+  //Para desplazar al jugador
+  desplazar(adelante,derecha){
+    if(adelante && derecha){
+      var distancia = Math.sqrt(2*this.cantidadAvance*this.cantidadAvance);
+      this.translateOnAxis (this.frente, this.dt*(adelante*distancia/2));
+      this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(derecha*distancia/2));
+
+      //Para comprobar que no atraviesa la fabrica y no se sale del mapa, en caso contrario retrocede
+      if(this.position.x<16 && this.position.x>-10 && this.position.z<10.5 && this.position.z>-10.5 || 
+        (this.position.x>120 || this.position.x<-120 || this.position.z>120 || this.position.z<-120)){
+        this.translateOnAxis (this.frente, -this.dt*(adelante*distancia/2));
+        this.translateOnAxis (new THREE.Vector3(0,0,1), -this.dt*(derecha*distancia/2));
+      }
     }
 
-    else if(this.direccionAlmacenada.l)
-      this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(this.cantidadAvance*this.direccionAlmacenada.l));
+    else if(derecha){
+      this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(this.cantidadAvance*derecha));
 
-    else if(this.direccionAlmacenada.a)
-      this.translateOnAxis (this.frente, this.dt*(this.cantidadAvance*this.direccionAlmacenada.a));
+      //Para comprobar que no atraviesa la fabrica y no se sale del mapa, en caso contrario retrocede
+      if(this.position.x<16 && this.position.x>-10 && this.position.z<10.5 && this.position.z>-10.5 || 
+        (this.position.x>120 || this.position.x<-120 || this.position.z>120 || this.position.z<-120))
+        this.translateOnAxis (new THREE.Vector3(0,0,1), -this.dt*(this.cantidadAvance*derecha));
+    }
+      
+
+    else if(adelante){
+      this.translateOnAxis (this.frente, this.dt*(this.cantidadAvance*adelante));
+
+      //Para comprobar que no atraviesa la fabrica y no se sale del mapa, en caso contrario retrocede
+      if(this.position.x<16 && this.position.x>-10 && this.position.z<10.5 && this.position.z>-10.5 || 
+        (this.position.x>120 || this.position.x<-120 || this.position.z>120 || this.position.z<-120))
+        this.translateOnAxis (this.frente, -this.dt*(this.cantidadAvance*adelante));
+    }
   }
 
   //Para girar cámara con el ratón
