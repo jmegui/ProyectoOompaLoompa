@@ -29,6 +29,9 @@ class Jugador extends THREE.Object3D {
     this.disparando = false;
     this.tiempoDisparo = 0;
 
+    //Munición del jugador
+    this.municion = 200;
+
     /*-----------CREACION-ELEMENTOS-------------*/
     
     this.crearCameraPrimeraPersona();

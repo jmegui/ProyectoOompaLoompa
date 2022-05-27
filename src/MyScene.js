@@ -15,6 +15,7 @@ import {Reparacion} from './Reparacion.js'
 import {Calaveras} from './Calaveras.js'
 import {Proyectil} from './Proyectil.js'
 import {Torreta} from './Torreta.js'
+import {Municion} from './Municion.js'
  
 /// La clase fachada del modelo
 /**
@@ -48,6 +49,7 @@ class MyScene extends THREE.Scene {
     this.tiempoConsumible = 0;//Tiempo que lleva el consumible actual
     this.modoConstruirTorreta = false; //Indica si se encuentra en modo construir torreta
     this.noche = false; //Indica si nos encontramos en la noche
+    this.puedeDisparar = true; // Indica si el jugador tiene munición o es capaz de disparar
 
     /*-----------ELEMENTOS-DE-INTERACCIOn-DE-LA-ESCENA--------*/
     this.proyectiles = []; //Almacena los proyectiles que se encuentran en la escena
@@ -55,6 +57,10 @@ class MyScene extends THREE.Scene {
     this.camera = this.jugador.camera; //Se establece como camara la camara del jugador(Para primera persona)
     this.robots = [new Robot()]; //Almacena los robots
     this.fabrica = new Fabrica(); //Almacena la fabrica
+    this.corazon = new Corazon();
+    this.calaveras = new Calaveras();
+    this.municion = new Municion();
+    this.llave = new Reparacion();
     this.consumible = null;//Almacena el consumible que se encuentra activo
     this.torretas = [];//Almacena las torretas
     this.torretaEnConstruccion = null; //Almacena la torreta en construccion
@@ -67,6 +73,8 @@ class MyScene extends THREE.Scene {
       this.add(this.robots[i+1]);
     }
     this.add(this.fabrica);
+
+    document.getElementById("municion").textContent = this.jugador.municion;
   }
   
 /*______________________________________________________________________________________________________________________*/
@@ -259,9 +267,10 @@ class MyScene extends THREE.Scene {
         document.getElementById("torreta").textContent = "Para construir una torreta por 100$ pulsa T";
       }
       //En caso contrario dispara
-      else{
+      else if(this.puedeDisparar){
         //Se inicia el efectoDisparo
         this.jugador.disparo();
+        this.quitarMunicion(1);
 
         // Se obtiene la posición del clic
         // en coordenadas de dispositivo normalizado
@@ -361,8 +370,11 @@ aplicarControles(){
   //Se aplica al coger la calavera
   eliminarTodosLosEnemigos(){
     for(var i = 0; i<this.robots.length; i++){
+
       this.robots[i].eliminacionInstantanea();
+
     }
+    // this.robots=[];
   }
 
 /*______________________________________________________________________________________________________________________*/
@@ -377,19 +389,24 @@ aplicarControles(){
       this.remove(this.consumible);
     }
 
-    //Hay un 20% de que salgan las calaveras, un 40% de que salga un corazon y un 40% de que salga una reparacion
+    //Hay un 10% de que salgan las calaveras, un 0% de que salga un corazon , un 10% de que salga una reparacion y 50% de Munición 
     var aleatorio = Math.random();
 
-    if(aleatorio<0.4){
-      this.consumible = new Corazon();
+    if(aleatorio<0.2){//CORAZON -- VIDA
+      this.consumible = this.corazon;
       this.add(this.consumible);
     }
-    else if(aleatorio<0.8){
-      this.consumible = new Reparacion();
+    else if(aleatorio < 0.7) // CAJA -- MUNICIÓN
+    {
+      this.consumible = this.municion;
+      this.add(this.consumible);
+    }
+    else if(aleatorio<0.9){ // LLAVE -- REPARACIÓN FÁBRICA
+      this.consumible = this.llave;
       this.add(this.consumible);
     }
     else{
-      this.consumible = new Calaveras();
+      this.consumible = this.calaveras; // CALAVERAS -- MATAR A TODOS LOS ENEMIGOS INSTANTANEO
       this.add(this.consumible);
     }
 
@@ -431,6 +448,26 @@ aplicarControles(){
         this.remove(this.proyectiles[i]);
         this.proyectiles.splice(i,1);
       }
+    }
+  }
+
+  addMunicion()
+  {
+    this.jugador.municion += 50;
+    document.getElementById("municion").textContent = this.jugador.municion;
+    this.puedeDisparar = true;
+  }
+
+  quitarMunicion(cantidad)
+  {
+    if(this.jugador.municion >= cantidad)
+    this.jugador.municion -= cantidad;
+
+    document.getElementById("municion").textContent = this.jugador.municion;
+
+    if(this.jugador.municion <= 0)
+    {
+      this.puedeDisparar = false;
     }
   }
 

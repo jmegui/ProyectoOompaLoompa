@@ -14,7 +14,7 @@
             font: 100% sans-serif;
         }
 
-        .tiempo, .muertes, .dinero, #torreta{
+        .tiempo, .muertes, .dinero,.municion, #torreta{
             width: 10%;
             height: 10%;
             display: inline-block;
@@ -38,6 +38,11 @@
             left: 26%; 
         }
 
+        .municion{
+            width: 12%;
+            left: 40%; 
+        }
+
         #dinero{
             color: green;
         }
@@ -45,7 +50,7 @@
         #torreta{
             width: 40%;
             height: 3.5%;
-            left: 40%; 
+            left: 55%; 
             font-size: 150%;
         }
 
@@ -168,6 +173,7 @@
     <div class="tiempo"><span class="tituloTiempo">&nbsp;Tiempo:</span><br><span id="tiempoPartida"></span></div>
     <div class="muertes"><span class="tituloTiempo">&nbsp;Muertes:</span><br><span id="muertes">0</span></div>
     <div class="dinero"><span class="tituloTiempo">&nbsp;Dinero:</span><br><span id="dinero">0 $</span></div>
+    <div class="municion"><span class="tituloTiempo">&nbsp;Municion:</span><br><span id="municion"></span></div>
     <span id="torreta">Para construir una torreta por 100$ pulsa T</span>
     </div>
     <img src="imgs/mira.png" id="mira">
