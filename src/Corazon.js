@@ -1,6 +1,8 @@
 import * as THREE from '../libs/three.module.js'
+
+import {Consumible} from './Consumible.js'
  
-class Corazon extends THREE.Object3D {
+class Corazon extends Consumible {
   constructor() {
     super();
 
@@ -8,11 +10,6 @@ class Corazon extends THREE.Object3D {
     this.crearGeometria();
     this.rotateZ(Math.PI);
     this.scale.set(0.02,0.02,0.02);
-
-    //Genero su posición de manera aleatoria con respecto al centro
-    var distanciaAleatoria = Math.random()*(100-10)+20;
-    this.rotateY(Math.random()*2*Math.PI);
-    this.translateOnAxis(new THREE.Vector3(0,0,-1),distanciaAleatoria);
     this.position.y = 3;
   }
 
@@ -47,26 +44,16 @@ class Corazon extends THREE.Object3D {
 /*______________________________________________________________________________________________________________________*/
 /*__________________________________________________ACCIONES____________________________________________________________*/
 /*______________________________________________________________________________________________________________________*/
-
-//Calcula distancia entre dos puntos a la altura del suelo
-  getDistancia(inicio,fin){
-      return Math.sqrt(Math.pow(inicio.x - fin.x, 2) + Math.pow(inicio.z - fin.z, 2));
-  }
   
   //Comprueba si esta intersectando y aplica el efecto
   intersecta(escena){
-    if(this.getDistancia(this.position,escena.jugador.position)<2){
+    if(this.getDistancia(this.position,escena.jugador.position)<2.5){
       escena.jugador.vida += 20;
       if(escena.jugador.vida>100) escena.jugador.vida = 100;
-      this.objeto.geometry.dispose();
       return true;
     }
 
     return false;
-  }
-  
-  update () {
-    this.rotation.y += 0.01;
   }
 }
 

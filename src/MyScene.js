@@ -10,6 +10,7 @@ import { Stats } from '../../libs/stats.module.js'
 import {Robot} from './Robot.js'
 import { Jugador } from './Jugador.js'
 import {Fabrica} from './Fabrica.js'
+import {Consumible} from './Consumible.js'
 import {Corazon} from './Corazon.js'
 import {Reparacion} from './Reparacion.js'
 import {Calaveras} from './Calaveras.js'
@@ -57,10 +58,12 @@ class MyScene extends THREE.Scene {
     this.camera = this.jugador.camera; //Se establece como camara la camara del jugador(Para primera persona)
     this.robots = [new Robot()]; //Almacena los robots
     this.fabrica = new Fabrica(); //Almacena la fabrica
+    //Precarga modelos
     this.corazon = new Corazon();
     this.calaveras = new Calaveras();
     this.municion = new Municion();
     this.llave = new Reparacion();
+
     this.consumible = null;//Almacena el consumible que se encuentra activo
     this.torretas = [];//Almacena las torretas
     this.torretaEnConstruccion = null; //Almacena la torreta en construccion
@@ -341,8 +344,8 @@ aplicarControles(){
     for(var i = 0; i<this.robots.length; i++){
       this.robots[i].update(this.pausa,this.jugador.position);
 
-      //Si el robot esta golpeando se actualiza la vida del jugador o de la fabrica
-      if(this.robots[i].puñetazo==0 && !this.pausa){
+      //Si al robot le toca golpeary esta vivo se actualiza la vida del jugador o de la fabrica
+      if(this.robots[i].puñetazo==0 && this.robots[i].vida>0 && !this.pausa){
         if(this.robots[i].objetivo[0]=='fabrica' && this.fabrica.vida>0)
           this.fabrica.vida-=this.robots[i].daño;
         else if(this.jugador.vida>0)
@@ -357,6 +360,7 @@ aplicarControles(){
         document.getElementById("muertes").textContent = this.muertesTotales;
         document.getElementById("dinero").textContent = this.dinero+" $";
         this.robots.splice(i,1);
+        i--;
       }
 
       //Si hay menos de X robots añado uno, esa X se incrementa conforme avanza la partida
@@ -374,7 +378,6 @@ aplicarControles(){
       this.robots[i].eliminacionInstantanea();
 
     }
-    // this.robots=[];
   }
 
 /*______________________________________________________________________________________________________________________*/
@@ -383,34 +386,29 @@ aplicarControles(){
 
   //Creo un consumible
   crearConsumible(){
-    //Si habia un consumible anterior se elimina
-    if(this.consumible!=null){
-      if(this.consumible.tipo=="corazon")this.consumible.objeto.geometry.dispose();
+    if(this.consumible!=null)
       this.remove(this.consumible);
-    }
 
-    //Hay un 10% de que salgan las calaveras, un 0% de que salga un corazon , un 10% de que salga una reparacion y 50% de Munición 
+    //Hay un 10% de que salgan las calaveras, un 20% de que salga un corazon , un 20% de que salga una reparacion y 50% de Munición 
     var aleatorio = Math.random();
 
-    if(aleatorio<0.2){//CORAZON -- VIDA
-      this.consumible = this.corazon;
-      this.add(this.consumible);
-    }
-    else if(aleatorio < 0.7) // CAJA -- MUNICIÓN
+    if(aleatorio < 0.5 || this.jugador.municion==0) // CAJA -- MUNICIÓN
     {
-      this.consumible = this.municion;
-      this.add(this.consumible);
+      this.consumible = this.municion.nuevaPosicion();
+    }
+    else if(aleatorio<0.7){//CORAZON -- VIDA
+      this.consumible = this.corazon.nuevaPosicion();
     }
     else if(aleatorio<0.9){ // LLAVE -- REPARACIÓN FÁBRICA
-      this.consumible = this.llave;
-      this.add(this.consumible);
+      this.consumible = this.llave.nuevaPosicion();
     }
     else{
-      this.consumible = this.calaveras; // CALAVERAS -- MATAR A TODOS LOS ENEMIGOS INSTANTANEO
-      this.add(this.consumible);
+      this.consumible = this.calaveras.nuevaPosicion(); // CALAVERAS -- MATAR A TODOS LOS ENEMIGOS INSTANTANEO
     }
 
+    this.add(this.consumible);
     this.tiempoConsumible = 0;
+    console.log(this.consumible);
   }
 
   //Comprobar colision consumible
@@ -419,7 +417,6 @@ aplicarControles(){
     if(!this.pausa && this.consumible.intersecta(this)){
       this.remove(this.consumible);
       this.consumible = null;
-      this.tiempoConsumible=0;
     }
   }
 
@@ -621,7 +618,7 @@ $(function () {
 
   //Deteccion click
   window.addEventListener("click", function(event){
-    if(document.pointerLockElement==document.body && !scene.pausa){
+    if(document.pointerLockElement==document.body && !scene.pausa && event.button==0){
       scene.clickIzquierdo();
     }
   });
