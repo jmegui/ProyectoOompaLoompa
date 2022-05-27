@@ -10,7 +10,6 @@ class Consumible extends THREE.Object3D {
 
   nuevaPosicion(){
     this.position.x = 0;
-    this.position.y = 0;
     this.position.z = 0;
     //Genero su posición de manera aleatoria con respecto al centro
     var distanciaAleatoria = Math.random()*(100-10)+20;
