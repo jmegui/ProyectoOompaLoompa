@@ -35,8 +35,6 @@ class MyScene extends THREE.Scene {
     this.createLights (); // Las luces
     this.createGround (); // El suelo
     this.createEntorno(); // El entorno
-    this.axis = new THREE.AxesHelper (5); //Creacion de los ejes
-    this.add (this.axis);
 
     /*-----------ATRIBUTOS-PARA-GESTIONAR-EVENTOS-------------*/
     this.clock = new THREE.Clock(); //El reloj para gestionar los eventos relacionados con el tiempo
@@ -151,10 +149,6 @@ class MyScene extends THREE.Scene {
   
   setLightIntensity (valor) {
     this.spotLight.intensity = valor;
-  }
-  
-  setAxisVisible (valor) {
-    this.axis.visible = valor;
   }
   
   createRenderer (myCanvas) {

@@ -218,7 +218,7 @@ class Robot extends THREE.Object3D {
   }
 
   eliminarGeometria(modelo){
-    if(modelo.children.length==0 && modelo.geometry!=null){
+    if(modelo.children!=null && modelo.geometry!=null){
       modelo.geometry.dispose();
     }
     else{
