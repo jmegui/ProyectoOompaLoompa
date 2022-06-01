@@ -408,7 +408,6 @@ aplicarControles(){
 
     this.add(this.consumible);
     this.tiempoConsumible = 0;
-    console.log(this.consumible);
   }
 
   //Comprobar colision consumible

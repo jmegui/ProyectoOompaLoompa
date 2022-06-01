@@ -148,15 +148,12 @@ class Jugador extends THREE.Object3D {
   //Para desplazar al jugador
   desplazar(adelante,derecha){
     if(adelante && derecha){
-      var distancia = Math.sqrt(2*this.cantidadAvance*this.cantidadAvance);
-      this.translateOnAxis (this.frente, this.dt*(adelante*distancia/2));
-      this.translateOnAxis (new THREE.Vector3(0,0,1), this.dt*(derecha*distancia/2));
+      this.translateOnAxis (new THREE.Vector3(adelante/Math.abs(adelante),0,derecha/Math.abs(derecha)), this.dt*this.cantidadAvance);
 
       //Para comprobar que no atraviesa la fabrica y no se sale del mapa, en caso contrario retrocede
       if(this.position.x<16 && this.position.x>-10 && this.position.z<10.5 && this.position.z>-10.5 || 
         (this.position.x>120 || this.position.x<-120 || this.position.z>120 || this.position.z<-120)){
-        this.translateOnAxis (this.frente, -this.dt*(adelante*distancia/2));
-        this.translateOnAxis (new THREE.Vector3(0,0,1), -this.dt*(derecha*distancia/2));
+          this.translateOnAxis (new THREE.Vector3(-adelante/Math.abs(adelante),0,-derecha/Math.abs(derecha)), this.dt*this.cantidadAvance);
       }
     }
 
